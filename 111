@@ -1,0 +1,60 @@
+#!/bin/bash
+
+echo "欢迎来到 Armbian 系统！"
+echo -e "\033[35m当前时间：$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
+echo "系统内核版本：$(uname -r)"
+
+# 检查 sing-box 版本
+if command -v sing-box >/dev/null 2>&1; then
+    SINGBOX_VERSION=$(sing-box version 2>/dev/null | head -n 1 || echo "未知版本")
+    echo -e "\033[1;32m当前 sing-box 版本:\033[0m $SINGBOX_VERSION"
+else
+    echo -e "\033[1;31mSing-box 未安装或不可用！\033[0m"
+fi
+
+# 检查防火墙状态
+if command -v nft >/dev/null 2>&1; then
+    if systemctl is-active nftables >/dev/null 2>&1; then
+        echo -e "\033[1;36mNftables 防火墙已启用\033[0m"
+    else
+        echo -e "\033[1;35mNftables 防火墙未运行\033[0m"
+    fi
+else
+    echo -e "\033[1;31mNftables 防火墙未安装！\033[0m"
+fi
+
+# 显示 CPU 使用率
+echo "CPU 使用率："
+top -bn1 | grep "Cpu(s)" | awk '{if (NF >= 8) print "  使用率: " $2 "%, 空闲: " $8 "%"}'
+
+# 显示内存使用情况
+echo "当前内存使用情况: $(free -h | awk '/^Mem/ {printf "%s/%s (%.2f%%)\n", $3, $2, $3/$2*100}')"
+
+# 显示磁盘使用情况
+echo "当前磁盘使用情况: $(df -h / 2>/dev/null | awk 'NR==2 {print $5}')"
+
+# 显示网关信息
+DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
+GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
+if [[ -n "$DEFAULT_GATEWAY" ]]; then
+    echo -e "\033[1;34m默认网关:\033[0m $DEFAULT_GATEWAY"
+    echo -e "\033[1;34m网关接口:\033[0m $GATEWAY_INTERFACE"
+else
+    echo -e "\033[1;31m未找到默认网关信息！\033[0m"
+fi
+
+# 显示 DNS 信息
+if [[ -f /run/systemd/resolve/resolv.conf ]]; then
+    DNS_SERVERS=$(grep '^nameserver' /run/systemd/resolve/resolv.conf | awk '{print $2}')
+else
+    DNS_SERVERS=$(grep '^nameserver' /etc/resolv.conf | awk '{print $2}')
+fi
+
+if [[ -n "$DNS_SERVERS" ]]; then
+    echo -e "\033[1;34mDNS 服务器地址:\033[0m"
+    for dns in $DNS_SERVERS; do
+        echo "  $dns"
+    done
+else
+    echo -e "\033[1;31m未找到 DNS 服务器信息！\033[0m"
+fi
