@@ -4,10 +4,25 @@ echo "欢迎来到 Armbian 系统！"
 echo -e "\033[35m当前时间：$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
 echo "系统内核版本：$(uname -r)"
 
-# 检查 sing-box 版本
+# Sing-box 版本和状态检查
 if command -v sing-box >/dev/null 2>&1; then
     SINGBOX_VERSION=$(sing-box version 2>/dev/null | head -n 1 || echo "未知版本")
     echo -e "\033[1;32m当前 sing-box 版本:\033[0m $SINGBOX_VERSION"
+    
+    # Sing-box 运行状态
+    if systemctl is-active sing-box >/dev/null 2>&1; then
+        echo -e "\033[1;32mSing-box 服务正在运行\033[0m"
+        
+        # 获取 Sing-box 内存占用
+        SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
+        if [[ -n "$SINGBOX_MEMORY" ]]; then
+            echo -e "\033[1;34mSing-box 内存占用:\033[0m ${SINGBOX_MEMORY} MB"
+        else
+            echo -e "\033[1;31m无法获取 Sing-box 内存占用！\033[0m"
+        fi
+    else
+        echo -e "\033[1;31mSing-box 服务未运行\033[0m"
+    fi
 else
     echo -e "\033[1;31mSing-box 未安装或不可用！\033[0m"
 fi
