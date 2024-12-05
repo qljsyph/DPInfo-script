@@ -19,7 +19,7 @@ if ! command -v sing-box &> /dev/null; then
     sudo apt-get install sing-box -y
 else
     echo "sing-box 已安装，当前版本信息如下："
-    sing-box --version
+    sing-box version
     echo "是否更新 sing-box？"
     echo "1 更新安装稳定版"
     echo "2 更新安装 beta 版"
