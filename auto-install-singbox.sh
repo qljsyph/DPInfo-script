@@ -94,6 +94,26 @@ sed -i "s|BACKEND_URL=\"http://192.168.10.12:5000\"|BACKEND_URL=\"$backend_addre
 read -p "请输入订阅链接: " subscription_url
 sed -i "s|SUBSCRIPTION_URL=\"\"|SUBSCRIPTION_URL=\"$subscription_url\"|g" /root/debian_tproxy.sh /root/tun_debian.sh
 
+# 询问是否修改 debian_tproxy.sh 中的 TEMPLATE_URL 地址，并设置文字颜色为红色
+echo -e "\033[31m是否修改 debian_tproxy.sh 中的 TEMPLATE_URL 地址？"
+echo -e "请输入新的地址后，脚本将替换该地址。\033[0m"
+read -p "请输入新地址 (留空跳过修改): " new_debian_tproxy_url
+
+if [[ -n "$new_debian_tproxy_url" ]]; then
+    echo "正在替换 debian_tproxy.sh 中的 TEMPLATE_URL..."
+    sed -i "s|TEMPLATE_URL=\"[^\"]*\"|TEMPLATE_URL=\"$new_debian_tproxy_url\"|g" /root/debian_tproxy.sh
+fi
+
+# 询问是否修改 tun_debian.sh 中的 TEMPLATE_URL 地址
+echo -e "\033[31m是否修改 tun_debian.sh 中的 TEMPLATE_URL 地址？"
+echo -e "请输入新的地址后，脚本将替换该地址。\033[0m"
+read -p "请输入新地址 (留空跳过修改): " new_tun_debian_url
+
+if [[ -n "$new_tun_debian_url" ]]; then
+    echo "正在替换 tun_debian.sh 中的 TEMPLATE_URL..."
+    sed -i "s|TEMPLATE_URL=\"[^\"]*\"|TEMPLATE_URL=\"$new_tun_debian_url\"|g" /root/tun_debian.sh
+fi
+
 # 提示是否执行脚本
 echo "脚本配置完成，选择是否执行："
 echo "1 执行 debian_tproxy.sh"
