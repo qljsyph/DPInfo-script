@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "欢迎来到 Armbian 系统！"
+echo "欢迎来到 私人服务 系统！"
 echo -e "\033[35m当前时间：$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
 echo "系统内核版本：$(uname -r)"
 

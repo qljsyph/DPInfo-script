@@ -8,6 +8,15 @@ sudo apt update -y
 echo "正在更新系统..."
 sudo apt upgrade -y
 
+# 检查 curl 是否已安装，如果没有安装则自动安装
+if ! command -v curl &> /dev/null; then
+    echo "curl 未安装，正在安装..."
+    sudo apt update -y
+    sudo apt install curl -y
+else
+    echo "curl 已安装。"
+fi
+
 # 检查是否已安装 sing-box
 if ! command -v sing-box &> /dev/null; then
     echo "sing-box 未安装，开始安装..."
