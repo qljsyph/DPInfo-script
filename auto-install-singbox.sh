@@ -72,6 +72,22 @@ else
     echo "nftables 防火墙已安装。"
 fi
 
+# 启用 IPv4 和 IPv6 转发
+echo "正在启用 IPv4 和 IPv6 转发..."
+if sudo sed -i '/net.ipv4.ip_forward/s/^#//;/net.ipv6.conf.all.forwarding/s/^#//' /etc/sysctl.conf && sudo sysctl -p; then
+    echo "IPv4 和 IPv6 转发已成功启用。"
+else
+    echo "启用 IPv4 和 IPv6 转发失败，请检查系统配置。"
+    exit 1
+fi
+
+# 下载必要的脚本
+echo "正在下载脚本..."
+sudo curl -o /root/debian_tproxy.sh https://ghp.ci/https://raw.githubusercontent.com/qljsyph/EasySingbox/master/Linux/debian_tproxy.sh
+sudo curl -o /root/tun_debian.sh https://ghp.ci/https://raw.githubusercontent.com/qljsyph/EasySingbox/master/Linux/tun_debian.sh
+sudo curl -o /root/stop_debian_tproxy.sh https://ghp.ci/https://raw.githubusercontent.com/qljsyph/EasySingbox/master/Linux/stop_debian_tproxy.sh
+
+
 # 下载必要的脚本
 echo "正在下载脚本..."
 sudo curl -o /root/debian_tproxy.sh https://ghp.ci/https://raw.githubusercontent.com/qljsyph/EasySingbox/master/Linux/debian_tproxy.sh
