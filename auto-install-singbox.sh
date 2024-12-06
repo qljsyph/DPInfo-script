@@ -81,7 +81,7 @@ sudo curl -o /root/stop_debian_tproxy.sh https://ghp.ci/https://raw.githubuserco
 
 # 赋予脚本执行权限
 echo "正在赋予脚本执行权限..."
-sudo chmod +x /root/debian_tproxy.sh /root/stop_debian_tproxy.sh /root/tun_debian.sh
+sudo chmod 755 /root/debian_tproxy.sh /root/stop_debian_tproxy.sh /root/tun_debian.sh
 
 # 提示输入后端地址
 read -p "请输入后端地址 (例如 http://192.168.10.12:5000): " backend_address
