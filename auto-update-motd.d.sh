@@ -1,20 +1,52 @@
 #!/bin/bash
 
+##!/bin/bash
+
 # 定义要检查的代码块
 check_code='if [ -n "$SSH_CONNECTION" ]; then
-    run-parts /etc/update-motd.d
+ run-parts /etc/update-motd.d
 fi'
 
-# 检查 /etc/profile 是否已经包含要添加的代码块
-echo "正在检查 /etc/profile 是否已经包含所需的代码块..."
+# 使用更精确的检查方法
+check_precise() {
+    # 使用 awk 进行精确匹配，忽略可能的空白和缩进差异
+    awk -v code="$1" 'BEGIN{found=0} 
+    # 去除代码块中的所有空白字符
+    function strip(s) {
+        gsub(/[ \t\r\n]/, "", s)
+        return s
+    }
+    # 将文件中的每一行和目标代码块进行比较
+    {
+        current = current $0
+        if (strip(current) == strip(code)) {
+            found=1
+            exit
+        }
+        # 如果当前累积的行超过了代码块长度，就移除最前面的行
+        if (split(current, arr, "\n") > split(code, carr, "\n")) {
+            sub(/^[^\n]*\n/, "", current)
+        }
+    }
+    END {
+        exit (found ? 0 : 1)
+    }' /etc/profile
+}
 
-# 检查整个代码块是否存在
-if ! grep -qF -- "$check_code" /etc/profile; then
-    # 如果没有找到，则确保在文件末尾添加空行后，再将代码块追加到 /etc/profile 的末尾
-    echo -e "\n$check_code" | sudo tee -a /etc/profile > /dev/null
-    echo "内容已添加到 /etc/profile"
+# 执行精确检查
+if ! check_precise "$check_code"; then
+    # 如果未找到完全匹配的代码块
+    echo "未找到完全匹配的代码块，准备添加..."
+    
+    # 确保文件以换行结尾
+    sudo sed -i -e '$a\' /etc/profile
+    
+    # 追加代码块
+    echo "$check_code" | sudo tee -a /etc/profile > /dev/null
+    
+    echo "代码块已成功添加到 /etc/profile"
 else
-    echo "所需内容已存在于 /etc/profile"
+    echo "精确匹配的代码块已存在于 /etc/profile"
 fi
 
 # 选择操作系统类型：Debian 或 Armbian
