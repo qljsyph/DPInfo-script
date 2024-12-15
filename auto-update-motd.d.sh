@@ -18,7 +18,7 @@ else
 fi
 
 # 选择操作系统类型：Debian 或 Armbian
-read -p "请选择操作系统类型 (debian/armbian): " os_type
+read -p "请选择操作系统类型 (输入debian/armbian): " os_type
 os_type=${os_type,,}  # 转换为小写
 
 # 根据操作系统类型选择下载的文件
