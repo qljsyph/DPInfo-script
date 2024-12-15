@@ -17,21 +17,36 @@ else
     echo "所需内容已存在于 /etc/profile"
 fi
 
-# 下载并放入 /etc/update-motd.d 目录
-file_url="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/20-debian-sysinfo"
-file_dest="/etc/update-motd.d/20-debian-sysinfo"
+# 选择操作系统类型：Debian 或 Armbian
+read -p "请选择操作系统类型 (debian/armbian): " os_type
+os_type=${os_type,,}  # 转换为小写
+
+# 根据操作系统类型选择下载的文件
+if [ "$os_type" == "debian" ]; then
+    file_url="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/20-debian-sysinfo"
+    file_name="20-debian-sysinfo"
+elif [ "$os_type" == "armbian" ]; then
+    file_url="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/20-armbian-sysinfo2"
+    file_name="20-armbian-sysinfo"
+else
+    echo "无效的操作系统类型，退出脚本。"
+    exit 1
+fi
+
+# 设置文件目标路径
+file_dest="/etc/update-motd.d/$file_name"
 
 # 检查文件是否已存在
 if [ -f "$file_dest" ]; then
     # 文件已存在，修改文件名（添加时间戳）
     timestamp=$(date +%Y%m%d%H%M%S)
-    new_file_dest="/etc/update-motd.d/20-debian-sysinfo-$timestamp"
+    new_file_dest="/etc/update-motd.d/$file_name-$timestamp"
     echo "文件已存在，新的文件名为：$new_file_dest"
     file_dest="$new_file_dest"
 fi
 
 # 下载文件
-echo "正在从 GitHub 下载文件..."
+echo "正在从 GitHub 下载 $os_type 的文件..."
 curl -s -o "$file_dest" "$file_url"
 
 # 检查下载是否成功
