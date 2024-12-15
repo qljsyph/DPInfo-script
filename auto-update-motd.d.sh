@@ -18,6 +18,14 @@ fi
 file_url="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/20-debian-sysinfo"
 file_dest="/etc/update-motd.d/20-debian-sysinfo"
 
+# 检查文件是否已存在
+if [ -f "$file_dest" ]; then
+    # 文件已存在，修改文件名（添加时间戳）
+    timestamp=$(date +%Y%m%d%H%M%S)
+    file_dest="/etc/update-motd.d/20-debian-sysinfo-$timestamp"
+    echo "文件已存在，新的文件名为：$file_dest"
+fi
+
 # 下载文件
 echo "正在从 GitHub 下载文件..."
 curl -s -o "$file_dest" "$file_url"
