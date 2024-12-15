@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 定义要检查的代码块
+# 检查的代码块
 check_code='if [ -n "$SSH_CONNECTION" ]; then
  run-parts /etc/update-motd.d
 fi'
 
-# 精确检查代码块是否存在的函数（忽略空白和换行）
+# 精确检查代码块是否存在（忽略空白和换行）
 check_code_exists() {
     local normalized_file=$(grep -v '^\s*$' /etc/profile | tr -d '[:space:]')
     local normalized_code=$(echo "$1" | tr -d '[:space:]')
@@ -17,7 +17,7 @@ check_code_exists() {
     fi
 }
 
-# 下载并设置 MOTD 脚本的函数
+# 下载并设置 MOTD 脚本
 download_motd_script() {
     # 选择操作系统类型：Debian 或 Armbian
     read -p "请选择操作系统类型 (输入debian/armbian): " os_type
