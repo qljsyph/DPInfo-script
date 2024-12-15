@@ -5,6 +5,8 @@
 bash <(curl -sL https://ghp.ci/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-sysinfo.sh)
 ```
 # 系统信息显示内容
+- **当前时间**
+- **系统内核版本**
 - **当前singbox版本**
 - **singbox运行状态**
 - **singbox内存占用**
