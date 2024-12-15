@@ -13,3 +13,20 @@ if ! grep -qF -- "$check_code" /etc/profile; then
 else
     echo "所需内容已存在于 /etc/profile"
 fi
+
+# 下载并放入 /etc/update-motd.d 目录
+file_url="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/20-debian-sysinfo"
+file_dest="/etc/update-motd.d/20-debian-sysinfo"
+
+# 下载文件
+echo "正在从 GitHub 下载文件..."
+curl -s -o "$file_dest" "$file_url"
+
+# 检查下载是否成功
+if [ $? -eq 0 ]; then
+    # 设置文件权限为 755
+    chmod 755 "$file_dest"
+    echo "文件已下载并设置权限为 755: $file_dest"
+else
+    echo "文件下载失败!"
+fi
