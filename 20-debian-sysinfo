@@ -43,7 +43,12 @@ echo "CPU 使用率："
 top -bn1 | grep "Cpu(s)" | awk '{if (NF >= 8) print "  使用率: " $2 "%, 空闲: " $8 "%"}'
 
 # 显示内存使用情况
-echo "当前内存使用情况: $(free -b | awk '/^Mem:/ {print $3 "/" $2 " (" (($3/$2)*100) "%)"}')"
+used=$(free -b | awk '/^Mem:/ {print $3}')
+total=$(free -b | awk '/^Mem:/ {print $2}')
+percentage=$(awk "BEGIN {printf \"%.2f\", ($used/$total)*100}")
+
+echo -e "当前内存使用情况: $(tput setaf 2)${used}/$total ($(tput setaf 3)$percentage%$(tput sgr0))"
+
 
 # 显示磁盘使用情况
 echo "当前磁盘使用情况: $(df -h / 2>/dev/null | awk 'NR==2 {print $5}')"
