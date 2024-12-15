@@ -27,7 +27,7 @@ else
     echo -e "\033[1;31mSing-box 未安装或不可用！\033[0m"
 fi
 
-# 检查防火墙状态
+# 检查nftables防火墙状态
 if command -v nft >/dev/null 2>&1; then
     if systemctl is-active nftables >/dev/null 2>&1; then
         echo -e "\033[1;36mNftables 防火墙已启用\033[0m"
