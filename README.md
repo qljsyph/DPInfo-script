@@ -1,10 +1,10 @@
 # 修改自动系统信息显示脚本
-适合armbian欢迎脚本和debian欢迎脚本显示的环境变量修改，科学环境下如果无法拉取请尝试删除镜像加速地址
+适合armbian欢迎脚本和debian欢迎脚本显示的环境变量修改，科学环境下如果无法拉取请尝试删除镜像加速地址，armbian和debian显示内容略有区别已基本满足使用。
 ## 一键脚本：
 ```
 bash <(curl -sL https://ghp.ci/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-update-motd.d.sh)
 ```
-# 欢迎信息显示内容
+# 系统信息显示内容
 - **当前singbox版本**
 - **singbox运行状态**
 - **singbox内存占用**
@@ -14,4 +14,4 @@ bash <(curl -sL https://ghp.ci/https://raw.githubusercontent.com/qljsyph/bash-sc
 - **存储状况**
 - **网络设置信息**
 - **网络接口信息**
-如果信息显示不精准或有问题，请尝试运行run-parts /etc/update-motd.d
+如果信息显示不精准或需要刷新，请尝试运行run-parts /etc/update-motd.d 进行检查校正。
