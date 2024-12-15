@@ -5,16 +5,30 @@ check_code='if [ -n "$SSH_CONNECTION" ]; then
  run-parts /etc/update-motd.d
 fi'
 
-# 精确检查代码块是否存在的函数
+# 精确检查代码块是否存在的函数（忽略空白和换行）
 check_code_exists() {
-    # 使用更严格的正则表达式和多行匹配
-    grep -Pzq "$(echo "$1" | sed 's/[]\[\/().^$*]/\\&/g')" /etc/profile
+    local normalized_file=$(grep -v '^\s*$' /etc/profile | tr -d '[:space:]')
+    local normalized_code=$(echo "$1" | tr -d '[:space:]')
+    
+    if [[ "$normalized_file" == *"$normalized_code"* ]]; then
+        return 0  # 找到完全匹配
+    else
+        return 1  # 未找到匹配
+    fi
 }
 
 # 执行精确检查
 if ! check_code_exists "$check_code"; then
-    # 如果未找到完全匹配的代码块
     echo "未找到完全匹配的代码块，准备添加..."
+    
+    # 先检查是否已经存在相似的代码块
+    existing_count=$(grep -c "run-parts /etc/update-motd.d" /etc/profile)
+    
+    if [ "$existing_count" -gt 0 ]; then
+        echo "警告：已存在类似的代码块（$existing_count 处）"
+        echo "请手动检查 /etc/profile 文件中是否需要去重"
+        exit 1
+    fi
     
     # 确保文件以换行结尾
     sudo sed -i -e '$a\' /etc/profile
