@@ -1,40 +1,18 @@
 #!/bin/bash
 
-##!/bin/bash
-
 # 定义要检查的代码块
 check_code='if [ -n "$SSH_CONNECTION" ]; then
  run-parts /etc/update-motd.d
 fi'
 
-# 使用更精确的检查方法
-check_precise() {
-    # 使用 awk 进行精确匹配，忽略可能的空白和缩进差异
-    awk -v code="$1" 'BEGIN{found=0} 
-    # 去除代码块中的所有空白字符
-    function strip(s) {
-        gsub(/[ \t\r\n]/, "", s)
-        return s
-    }
-    # 将文件中的每一行和目标代码块进行比较
-    {
-        current = current $0
-        if (strip(current) == strip(code)) {
-            found=1
-            exit
-        }
-        # 如果当前累积的行超过了代码块长度，就移除最前面的行
-        if (split(current, arr, "\n") > split(code, carr, "\n")) {
-            sub(/^[^\n]*\n/, "", current)
-        }
-    }
-    END {
-        exit (found ? 0 : 1)
-    }' /etc/profile
+# 精确检查代码块是否存在的函数
+check_code_exists() {
+    # 使用更严格的正则表达式和多行匹配
+    grep -Pzq "$(echo "$1" | sed 's/[]\[\/().^$*]/\\&/g')" /etc/profile
 }
 
 # 执行精确检查
-if ! check_precise "$check_code"; then
+if ! check_code_exists "$check_code"; then
     # 如果未找到完全匹配的代码块
     echo "未找到完全匹配的代码块，准备添加..."
     
@@ -46,7 +24,8 @@ if ! check_precise "$check_code"; then
     
     echo "代码块已成功添加到 /etc/profile"
 else
-    echo "精确匹配的代码块已存在于 /etc/profile"
+    echo "完整的代码块已存在于 /etc/profile，跳过添加"
+    exit 0
 fi
 
 # 选择操作系统类型：Debian 或 Armbian
