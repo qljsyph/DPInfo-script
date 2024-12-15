@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # 定义要检查的代码块
-check_code_1='if [ -n "$SSH_CONNECTION" ]; then'
-check_code_2='run-parts /etc/update-motd.d'
-check_code_3='fi'
+check_code='if [ -n "$SSH_CONNECTION" ]; then
+    run-parts /etc/update-motd.d
+fi'
 
 # 检查 /etc/profile 是否已经包含要添加的代码块
 echo "正在检查 /etc/profile 是否已经包含所需的代码块..."
 
-# 检查每一行代码块是否存在
-if ! grep -q -- "$check_code_1" /etc/profile || ! grep -q -- "$check_code_2" /etc/profile || ! grep -q -- "$check_code_3" /etc/profile; then
+# 检查整个代码块是否存在
+if ! grep -qF -- "$check_code" /etc/profile; then
     # 如果没有找到，则确保在文件末尾添加空行后，再将代码块追加到 /etc/profile 的末尾
-    echo -e "\n$check_code_1\n    $check_code_2\n$check_code_3" | sudo tee -a /etc/profile > /dev/null
+    echo -e "\n$check_code" | sudo tee -a /etc/profile > /dev/null
     echo "内容已添加到 /etc/profile"
 else
     echo "所需内容已存在于 /etc/profile"
