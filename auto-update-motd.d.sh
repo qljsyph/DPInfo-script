@@ -22,8 +22,9 @@ file_dest="/etc/update-motd.d/20-debian-sysinfo"
 if [ -f "$file_dest" ]; then
     # 文件已存在，修改文件名（添加时间戳）
     timestamp=$(date +%Y%m%d%H%M%S)
-    file_dest="/etc/update-motd.d/20-debian-sysinfo-$timestamp"
-    echo "文件已存在，新的文件名为：$file_dest"
+    new_file_dest="/etc/update-motd.d/20-debian-sysinfo-$timestamp"
+    echo "文件已存在，新的文件名为：$new_file_dest"
+    file_dest="$new_file_dest"
 fi
 
 # 下载文件
@@ -36,5 +37,5 @@ if [ $? -eq 0 ]; then
     chmod 755 "$file_dest"
     echo "文件已下载并设置权限为 755: $file_dest"
 else
-    echo "文件下载失败!"
+    echo "文件下载失败! 错误信息：$?"
 fi
