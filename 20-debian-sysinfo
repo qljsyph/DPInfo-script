@@ -85,7 +85,8 @@ if [[ -n "$DNS_SERVERS" ]]; then
     done
 else
     echo -e "\033[1;31m未找到 DNS 服务器信息！\033[0m"
-fi
+fi 
+
 # 获取网络接口、MAC 地址和 IP 地址信息
 echo -e "\n网络接口信息："
 for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
