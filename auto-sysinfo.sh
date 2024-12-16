@@ -1,5 +1,30 @@
 #!/bin/bash
 
+# 检查是否安装了 bc 命令
+check_bc_installed() {
+    if ! command -v bc &> /dev/null; then
+        echo "bc 命令未安装，正在尝试安装..."
+
+        # 检查操作系统并选择安装命令
+        if [ -f /etc/debian_version ]; then
+            sudo apt update && sudo apt install -y bc
+        else
+            echo "不支持的操作系统，请手动安装 bc 后重试。"
+            exit 1
+        fi
+
+        # 再次检查 bc 是否安装成功
+        if ! command -v bc &> /dev/null; then
+            echo "安装 bc 失败，请检查网络或包管理器配置。"
+            exit 1
+        fi
+
+        echo "bc 已成功安装。"
+    else
+        echo "bc 已安装，继续执行脚本。"
+    fi
+}
+
 # 检查的代码块
 check_code='if [ -n "$SSH_CONNECTION" ]; then
  run-parts /etc/update-motd.d
