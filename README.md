@@ -4,7 +4,7 @@
 版本: v1.0.2
 ## 一键脚本：
 ```
-bash <(curl -sL https://ghp.ci/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-sysinfo.sh)
+bash <(curl -sL https://gh-proxy.com/raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-sysinfo.sh)
 ```
 # 系统信息显示内容
 - **当前时间**
