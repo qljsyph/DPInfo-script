@@ -50,7 +50,7 @@ download_motd_script() {
 
     # 根据操作系统类型选择下载的文件
     if [ "$os_type" == "debian" ]; then
-        file_url="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
+        file_url="https://gh-proxy.com/raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
         file_name="20-debian-sysinfo"
     elif [ "$os_type" == "armbian" ]; then
         file_url="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
