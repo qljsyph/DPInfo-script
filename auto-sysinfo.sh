@@ -34,7 +34,7 @@ fi'
 check_code_exists() {
     local normalized_file=$(grep -v '^\s*$' /etc/profile | tr -d '[:space:]')
     local normalized_code=$(echo "$1" | tr -d '[:space:]')
-    
+
     if [[ "$normalized_file" == *"$normalized_code"* ]]; then
         return 0  # 找到完全匹配
     else
@@ -85,29 +85,38 @@ download_motd_script() {
         echo "文件下载失败! 错误信息：$?"
         exit 1
     fi
+
+    # 检查下载的脚本是否依赖 bc
+    if grep -q "bc" "$file_dest"; then
+        echo "检测到 MOTD 脚本使用了 bc，确保其已正确安装..."
+        check_bc_installed
+    fi
 }
 
 # 主脚本逻辑
 main() {
+    # 检查是否安装了 bc
+    check_bc_installed
+
     # 检查并添加代码块到 /etc/profile
     if ! check_code_exists "$check_code"; then
         echo "未找到完全匹配的代码块，准备添加..."
-        
+
         # 先检查是否已经存在相似的代码块
         existing_count=$(grep -c "run-parts /etc/update-motd.d" /etc/profile)
-        
+
         if [ "$existing_count" -gt 0 ]; then
             echo "警告：已存在类似的代码块（$existing_count 处）"
             echo "请手动检查 /etc/profile 文件中是否需要去重"
             exit 1
         fi
-        
+
         # 确保文件以换行结尾
-        sudo sed -i -e '$a\' /etc/profile
-        
+        sudo sed -i -e '$a\\' /etc/profile
+
         # 追加代码块
         echo "$check_code" | sudo tee -a /etc/profile > /dev/null
-        
+
         echo "代码块已成功添加到 /etc/profile"
     else
         echo "完整的代码块已存在于 /etc/profile，跳过添加"
