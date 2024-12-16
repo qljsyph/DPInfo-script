@@ -1,0 +1,132 @@
+#!/bin/bash
+# 定义颜色常量以提高可读性和一致性
+RESET="\033[0m"
+PURPLE="\033[1;35m"
+BLUE="\033[1;34m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+RED="\033[1;31m"
+CYAN="\033[1;36m"
+MAGENTA="\033[1;35m"
+
+# 欢迎界面和系统基本信息
+echo -e "${PURPLE}欢迎来到 私人服务 系统！${RESET}"
+echo -e "${BLUE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
+echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
+echo -e "${BLUE}系统已运行：$(uptime -p)${RESET}"
+
+# Sing-box 版本和状态检查
+if command -v sing-box >/dev/null 2>&1; then
+    SINGBOX_VERSION=$(sing-box version 2>/dev/null | head -n 1 || echo "未知版本")
+    echo -e "${GREEN}当前 sing-box 版本: ${RESET}$SINGBOX_VERSION"
+    if systemctl is-active sing-box >/dev/null 2>&1; then
+        echo -e "${GREEN}Sing-box 服务正在运行${RESET}"
+        SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
+        if [[ -n "$SINGBOX_MEMORY" ]]; then
+            echo -e "${BLUE}Sing-box 内存占用:${RESET} ${SINGBOX_MEMORY} MB"
+        else
+            echo -e "${RED}无法获取 Sing-box 内存占用！${RESET}"
+        fi
+    else
+        echo -e "${RED}Sing-box 服务未运行${RESET}"
+    fi
+else
+    echo -e "${RED}Sing-box 未安装或不可用！${RESET}"
+fi
+
+# 检查nftables防火墙状态
+if command -v nft >/dev/null 2>&1; then
+    if systemctl is-active nftables >/dev/null 2>&1; then
+        echo -e "${CYAN}Nftables 防火墙已启用${RESET}"
+    else
+        echo -e "${MAGENTA}Nftables 防火墙未运行${RESET}"
+    fi
+else
+    echo -e "${RED}Nftables 防火墙未安装！${RESET}"
+fi
+
+# 确保 PATH 和 TERM 设置正确
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export TERM=xterm
+
+# 显示 CPU 使用率
+CPU=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5); printf "%.2f", usage}')
+echo -e "${YELLOW}CPU 使用率：${RESET}${CPU}%, 空闲: $(echo "100 - $CPU" | bc)%"
+
+# 显示内存使用情况
+mem_total=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+mem_free=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
+mem_used=$((mem_total - mem_free))
+mem_usage=$(awk -v used=$mem_used -v total=$mem_total 'BEGIN {printf "%.2f", (used/total)*100}')
+echo -e "${YELLOW}当前内存使用情况：${RESET}$((mem_used / 1024))/$((mem_total / 1024)) MB (${mem_usage}%)"
+
+# 显示磁盘使用情况
+disk_usage=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')
+echo -e "${YELLOW}当前磁盘使用情况：${RESET}${disk_usage}"
+
+# 显示网关信息
+DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
+GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
+if [[ -n "$DEFAULT_GATEWAY" ]]; then
+    echo -e "${BLUE}默认网关:${RESET} $DEFAULT_GATEWAY"
+    echo -e "${BLUE}网关接口:${RESET} $GATEWAY_INTERFACE"
+else
+    echo -e "${RED}未找到默认网关信息！${RESET}"
+fi
+
+# 显示 DNS 信息
+if [[ -f /run/systemd/resolve/resolv.conf ]]; then
+    DNS_SERVERS=$(grep '^nameserver' /run/systemd/resolve/resolv.conf | awk '{print $2}')
+else
+    DNS_SERVERS=$(grep '^nameserver' /etc/resolv.conf | awk '{print $2}')
+fi
+if [[ -n "$DNS_SERVERS" ]]; then
+    echo -e "${BLUE}DNS 服务器地址:${RESET}"
+    for dns in $DNS_SERVERS; do
+        echo " $dns"
+    done
+else
+    echo -e "${RED}未找到 DNS 服务器信息！${RESET}"
+fi
+
+# 获取网络接口、MAC 地址和 IP 地址信息
+echo -e "\n${MAGENTA}网络接口信息：${RESET}"
+for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
+    # 跳过回环接口和虚拟接口（如 docker0、br0）
+    if [[ "$interface" == "lo" || "$interface" == "docker0" || "$interface" == "br0" ]]; then
+        continue
+    fi
+    
+    # 获取 MAC 地址
+    MAC_ADDRESS=$(cat /sys/class/net/"$interface"/address 2>/dev/null)
+    
+    # 获取 IP 地址
+    IP_ADDRESS=$(ip -o -4 addr show "$interface" | awk '{print $4}' | cut -d'/' -f1)
+    
+    # 判断是否为 DHCP 或静态 IP
+    IS_DHCP="静态 IP"
+    
+    # 检查网络接口配置文件（/etc/network/interfaces）中的配置
+    if grep -qE "iface\s+$interface\s+inet\s+dhcp" /etc/network/interfaces 2>/dev/null; then
+        IS_DHCP="DHCP 分配"
+    elif grep -qE "iface\s+$interface\s+inet\s+static" /etc/network/interfaces 2>/dev/null; then
+        IS_DHCP="静态 IP"
+    fi
+    
+    # 输出结果
+    echo -e "${YELLOW}接口:${RESET} $interface"
+    echo -e " ${BLUE}MAC 地址:${RESET} $MAC_ADDRESS"
+    echo -e " ${BLUE}IP 地址:${RESET} ${IP_ADDRESS:-未分配}"
+    echo -e " ${BLUE}IP 类型:${RESET} $IS_DHCP"
+done
+
+# 检查系统可用更新（仅限 Debian/Ubuntu）
+echo -e "\n${MAGENTA}系统更新检查：${RESET}"
+echo -e "${BLUE}正在检查 APT 更新...${RESET}"
+UPDATES=$(apt list --upgradable 2>/dev/null | grep -c upgradable)
+if [[ $UPDATES -gt 0 ]]; then
+    echo -e "${YELLOW}可用更新：${RESET}${UPDATES} 个软件包"
+    echo -e "${GREEN}建议执行 'sudo apt update && sudo apt upgrade' 进行更新${RESET}"
+else
+    echo -e "${GREEN}系统已是最新版本，无可用更新。${RESET}"
+fi
