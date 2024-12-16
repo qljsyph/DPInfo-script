@@ -72,23 +72,15 @@ download_motd_script() {
         file_dest="$new_file_dest"
     fi
 
-    # 下载文件
-    echo "正在从 GitHub 下载 $os_type 的文件..."
-    curl -s -o "$file_dest" "$file_url"
-
-  # 下载文件并检查是否成功
-if curl -sL --fail "$file_url" -o "$file_dest"; then
-    # 设置文件权限为 755
-    chmod 755 "$file_dest"
-    echo "文件已下载并设置权限为 755: $file_dest"
-else
-    # 如果下载失败，获取详细错误信息并显示
-    echo "文件下载失败！"
-    echo "错误详情："
-    curl -sL "$file_url"  # 显示更多错误信息
-    echo "错误码：$?"
-    exit 1
-fi
+    # 检查下载是否成功
+    if [ $? -eq 0 ]; then
+        # 设置文件权限为 755
+        chmod 755 "$file_dest"
+        echo "文件已下载并设置权限为 755: $file_dest"
+    else
+        echo "文件下载失败! 错误信息：$?"
+        exit 1
+    fi
 
 
     # 检查下载的脚本是否依赖 bc
