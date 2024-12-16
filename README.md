@@ -1,5 +1,5 @@
 # 自动系统信息显示脚本
-适合armbian欢迎脚本和debian欢迎脚本显示的环境变量修改，科学环境下如果无法拉取请尝试删除镜像加速地址，armbian和debian显示内容略有区别已基本满足使用。
+适合armbian和debian系统server模式显示系统信息的环境变量修改，科学环境下如果无法拉取请尝试删除镜像加速地址，armbian和debian显示内容略有区别已基本满足使用。
 ## 一键脚本：
 ```
 bash <(curl -sL https://ghp.ci/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-sysinfo.sh)
