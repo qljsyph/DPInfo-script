@@ -121,6 +121,10 @@ main() {
 
     # 执行下载 MOTD 脚本
     download_motd_script
+    
+    # 完成后自动重启 SSH 服务
+    echo "所有步骤完成，正在重启 SSH 服务..."
+    sudo systemctl restart sshd
 }
 
 # 运行主脚本
