@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 检查是否安装了 bc 命令
+# 检查 bc 命令
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
         echo "bc 命令未安装，正在尝试安装..."
