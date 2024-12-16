@@ -72,6 +72,10 @@ download_motd_script() {
         file_dest="$new_file_dest"
     fi
 
+    # 下载文件
+    echo "正在从 GitHub 下载 $os_type 的文件..."
+    curl -s -o "$file_dest" "$file_url"
+    
     # 检查下载是否成功
     if [ $? -eq 0 ]; then
         # 设置文件权限为 755
