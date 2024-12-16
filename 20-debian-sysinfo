@@ -1,8 +1,10 @@
 #!/bin/bash
 
-echo "欢迎来到 私人服务 系统！"
-echo -e "\033[35m当前时间：$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
-echo "系统内核版本：$(uname -r)"
+# 欢迎界面和系统基本信息
+echo -e "\033[1;35m欢迎来到 私人服务 系统！\033[0m"
+echo -e "\033[1;34m当前时间：$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
+echo -e "\033[1;34m系统内核版本：$(uname -r)\033[0m"
+echo -e "\033[1;34m系统已运行：$(uptime -p)\033[0m"
 
 # Sing-box 版本和状态检查
 if command -v sing-box >/dev/null 2>&1; then
