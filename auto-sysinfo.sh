@@ -61,7 +61,7 @@ download_motd_script() {
         
         # 下载两个文件
         file_url_1="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
-        file_url_2="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
+        file_url_2="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
         
         curl -s -o "/etc/update-motd.d/20-debian-sysinfo" "$file_url_1"
         curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_2"
