@@ -53,10 +53,10 @@ download_motd_script() {
         file_url_1="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
         file_name_1="20-debian-sysinfo"
         
-        file_url_2="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
+        file_url_2="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/backup/00-debian-heads"
         file_name_2="00-debian-heads"
     elif [ "$os_type" == "armbian" ]; then
-        file_url="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
+        file_url="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
         file_name="20-armbian-sysinfo"
     else
         echo "无效的操作系统类型，退出脚本。"
@@ -90,7 +90,7 @@ download_motd_script() {
 
     # 下载文件 1
     echo "正在从 GitHub 下载 $os_type 的文件 $file_name_1..."
-    curl -s -o "$file_dest_1" "$file_url_1"
+    curl -v -o "$file_dest_1" "$file_url_1"
     
     # 检查文件 1 下载是否成功
     if [ $? -eq 0 ]; then
@@ -105,7 +105,7 @@ download_motd_script() {
     if [ "$os_type" == "debian" ]; then
         # 下载文件 2
         echo "正在从 GitHub 下载 $os_type 的文件 $file_name_2..."
-        curl -s -o "$file_dest_2" "$file_url_2"
+        curl -v -o "$file_dest_2" "$file_url_2"
         
         # 检查文件 2 下载是否成功
         if [ $? -eq 0 ]; then
@@ -121,7 +121,7 @@ download_motd_script() {
     if [ "$os_type" == "armbian" ]; then
         # 下载文件
         echo "正在从 GitHub 下载 $os_type 的文件 $file_name..."
-        curl -s -o "$file_dest" "$file_url"
+        curl -v -o "$file_dest" "$file_url"
         
         # 检查文件下载是否成功
         if [ $? -eq 0 ]; then
