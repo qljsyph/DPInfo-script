@@ -50,20 +50,23 @@ download_motd_script() {
 
     # 根据操作系统类型选择下载的文件
     if [ "$os_type" == "debian" ]; then
-        # 删除已有文件并下载新的文件
+        # 删除已有文件
         for file_name in "20-debian-sysinfo" "00-debian-heads"; do
             file_dest="/etc/update-motd.d/$file_name"
             if [ -f "$file_dest" ]; then
-                echo "文件 $file_name 已存在，删除旧文件并重新下载..."
+                echo "文件 $file_name 已存在，删除旧文件..."
                 sudo rm -f "$file_dest"
             fi
         done
         
         # 下载两个文件
         file_url_1="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
-        file_url_2="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
+        file_url_2="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
         
+        echo "正在下载 20-debian-sysinfo 文件..."
         curl -s -o "/etc/update-motd.d/20-debian-sysinfo" "$file_url_1"
+        
+        echo "正在下载 00-debian-heads 文件..."
         curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_2"
         
         # 检查下载是否成功
@@ -81,7 +84,7 @@ download_motd_script() {
         # 删除已有文件并下载新的文件
         file_dest="/etc/update-motd.d/$file_name"
         if [ -f "$file_dest" ]; then
-            echo "文件 $file_name 已存在，删除旧文件并重新下载..."
+            echo "文件 $file_name 已存在，删除旧文件..."
             sudo rm -f "$file_dest"
         fi
         
