@@ -50,8 +50,11 @@ download_motd_script() {
 
     # 根据操作系统类型选择下载的文件
     if [ "$os_type" == "debian" ]; then
-        file_url="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
-        file_name="20-debian-sysinfo"
+        file_url_1="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
+        file_name_1="20-debian-sysinfo"
+        
+        file_url_2="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/backup/00-debian-heads"
+        file_name_2="00-debian-heads"
     elif [ "$os_type" == "armbian" ]; then
         file_url="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
         file_name="20-armbian-sysinfo"
@@ -61,33 +64,77 @@ download_motd_script() {
     fi
 
     # 设置文件目标路径
+    file_dest_1="/etc/update-motd.d/$file_name_1"
+    file_dest_2="/etc/update-motd.d/$file_name_2"
     file_dest="/etc/update-motd.d/$file_name"
 
-    # 检查文件是否已存在
-    if [ -f "$file_dest" ]; then
-        echo "文件已存在，正在删除旧文件并替换为新文件..."
-
-        # 删除旧文件
-        sudo rm -f "$file_dest"
-        echo "旧文件已删除。"
+    # 检查文件是否已存在并处理
+    if [ -f "$file_dest_1" ]; then
+        echo "文件 $file_name_1 已存在，正在删除旧文件并替换为新文件..."
+        sudo rm -f "$file_dest_1"
+        echo "旧文件 $file_name_1 已删除。"
     fi
 
-    # 下载文件
-    echo "正在从 GitHub 下载 $os_type 的文件..."
-    curl -s -o "$file_dest" "$file_url"
+    if [ "$os_type" == "debian" ] && [ -f "$file_dest_2" ]; then
+        echo "文件 $file_name_2 已存在，正在删除旧文件并替换为新文件..."
+        sudo rm -f "$file_dest_2"
+        echo "旧文件 $file_name_2 已删除。"
+    fi
+
+    # 如果是 Armbian，则单独检查该文件
+    if [ "$os_type" == "armbian" ] && [ -f "$file_dest" ]; then
+        echo "文件 $file_name 已存在，正在删除旧文件并替换为新文件..."
+        sudo rm -f "$file_dest"
+        echo "旧文件 $file_name 已删除。"
+    fi
+
+    # 下载文件 1
+    echo "正在从 GitHub 下载 $os_type 的文件 $file_name_1..."
+    curl -s -o "$file_dest_1" "$file_url_1"
     
-    # 检查下载是否成功
+    # 检查文件 1 下载是否成功
     if [ $? -eq 0 ]; then
-        # 设置文件权限为 755
-        sudo chmod 755 "$file_dest"
-        echo "文件已下载并设置权限为 755"
+        sudo chmod 755 "$file_dest_1"
+        echo "文件 $file_name_1 已下载并设置权限为 755"
     else
-        echo "文件下载失败! 错误信息：$?"
+        echo "文件 $file_name_1 下载失败! 错误信息：$?"
         exit 1
     fi
 
+    # 如果是 Debian，还需要下载第二个文件
+    if [ "$os_type" == "debian" ]; then
+        # 下载文件 2
+        echo "正在从 GitHub 下载 $os_type 的文件 $file_name_2..."
+        curl -s -o "$file_dest_2" "$file_url_2"
+        
+        # 检查文件 2 下载是否成功
+        if [ $? -eq 0 ]; then
+            sudo chmod 755 "$file_dest_2"
+            echo "文件 $file_name_2 已下载并设置权限为 755"
+        else
+            echo "文件 $file_name_2 下载失败! 错误信息：$?"
+            exit 1
+        fi
+    fi
+
+    # 如果是 Armbian，下载 Armbian 文件
+    if [ "$os_type" == "armbian" ]; then
+        # 下载文件
+        echo "正在从 GitHub 下载 $os_type 的文件 $file_name..."
+        curl -s -o "$file_dest" "$file_url"
+        
+        # 检查文件下载是否成功
+        if [ $? -eq 0 ]; then
+            sudo chmod 755 "$file_dest"
+            echo "文件 $file_name 已下载并设置权限为 755"
+        else
+            echo "文件 $file_name 下载失败! 错误信息：$?"
+            exit 1
+        fi
+    fi
+
     # 检查下载的脚本是否依赖 bc
-    if grep -q "bc" "$file_dest"; then
+    if grep -q "bc" "$file_dest_1" || ( [ "$os_type" == "debian" ] && grep -q "bc" "$file_dest_2" ); then
         echo "检测到 MOTD 脚本使用了 bc，确保其已正确安装..."
         check_bc_installed
     fi
