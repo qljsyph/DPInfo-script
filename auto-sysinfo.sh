@@ -79,7 +79,7 @@ download_motd_script() {
         fi
     elif [ "$os_type" == "armbian" ]; then
         file_url="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
-        file_name="20-armbian-sysinfo"
+        file_name="20-armbian-sysinfo2"
 
         # 删除已有文件并下载新的文件
         file_dest="/etc/update-motd.d/$file_name"
