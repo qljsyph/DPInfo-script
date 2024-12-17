@@ -2,6 +2,8 @@
 适合armbian和debian系统server模式显示系统信息的环境变量修改，当前网络环境下如果无法拉取请尝试删除镜像加速地址，armbian和debian显示内容略有区别已基本满足使用。https://ghp.ci/已挂换成https://ghproxy.net/
 # 版本
 版本: v1.0.2
+# 更新方式
+重新执行一键脚本下载对应系统文件
 ## 一键脚本：
 ```
 bash <(curl -sL https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-sysinfo.sh)

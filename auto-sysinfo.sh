@@ -65,11 +65,11 @@ download_motd_script() {
 
     # 检查文件是否已存在
     if [ -f "$file_dest" ]; then
-        # 文件已存在，修改文件名（添加时间戳）
-        timestamp=$(date +%Y%m%d%H%M%S)
-        new_file_dest="/etc/update-motd.d/$file_name-$timestamp"
-        echo "文件已存在，新的文件名为：$new_file_dest"
-        file_dest="$new_file_dest"
+        echo "文件已存在，正在删除旧文件并替换为新文件..."
+
+        # 删除旧文件
+        sudo rm -f "$file_dest"
+        echo "旧文件已删除。"
     fi
 
     # 下载文件
@@ -79,13 +79,12 @@ download_motd_script() {
     # 检查下载是否成功
     if [ $? -eq 0 ]; then
         # 设置文件权限为 755
-        chmod 755 "$file_dest"
+        sudo chmod 755 "$file_dest"
         echo "文件已下载并设置权限为 755: $file_dest"
     else
         echo "文件下载失败! 错误信息：$?"
         exit 1
     fi
-
 
     # 检查下载的脚本是否依赖 bc
     if grep -q "bc" "$file_dest"; then
