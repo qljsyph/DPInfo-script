@@ -27,6 +27,17 @@ else
     echo -e "\033[1;31mSing-box 未安装或不可用！\033[0m"
 fi
 
+# 检查 nftables-singbox 服务状态
+if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
+    if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
+        echo -e "\033[1;36mNftables-singbox 服务已启用\033[0m"
+    else
+        echo -e "\033[1;35mNftables-singbox 服务未启用\033[0m"
+    fi
+else
+    echo -e "\033[1;31mNftables-singbox 服务未安装！\033[0m"
+fi
+
 # 检查防火墙状态
 if command -v nft >/dev/null 2>&1; then
     if systemctl is-active nftables >/dev/null 2>&1; then
