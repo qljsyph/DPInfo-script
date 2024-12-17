@@ -53,7 +53,7 @@ download_motd_script() {
         file_url_1="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
         file_name_1="20-debian-sysinfo"
         
-        file_url_2="https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/backup/00-debian-heads"
+        file_url_2="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/backup/00-debian-heads"
         file_name_2="00-debian-heads"
     elif [ "$os_type" == "armbian" ]; then
         file_url="https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
