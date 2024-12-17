@@ -14,6 +14,7 @@ bash <(curl -sL https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/ba
 - **当前singbox版本**
 - **singbox运行状态**
 - **singbox内存占用**
+- **防火墙singbox服务状态**
 - **防火墙状态**
 - **cpu使用率**
 - **内存使用率**
