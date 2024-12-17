@@ -135,9 +135,9 @@ main() {
         # 追加代码块
         echo "$check_code" | sudo tee -a /etc/profile > /dev/null
 
-        echo "代码块已成功添加到 /etc/profile"
+        echo "代码块已成功添加到模块"
     else
-        echo "完整的代码块已存在于 /etc/profile，跳过添加"
+        echo "完整的代码块已存在于模块，跳过添加"
     fi
 
     # 执行下载 MOTD 脚本
