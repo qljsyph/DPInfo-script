@@ -80,7 +80,7 @@ download_motd_script() {
     if [ $? -eq 0 ]; then
         # 设置文件权限为 755
         sudo chmod 755 "$file_dest"
-        echo "文件已下载并设置权限为 755: $file_dest"
+        echo "文件已下载并设置权限为 755"
     else
         echo "文件下载失败! 错误信息：$?"
         exit 1
