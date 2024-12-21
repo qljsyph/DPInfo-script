@@ -1,59 +1,63 @@
 #!/bin/bash
 
+# 定义颜色常量
+RESET="\033[0m"
+PURPLE="\033[1;35m"
+BLUE="\033[1;34m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+RED="\033[1;31m"
+CYAN="\033[1;36m"
+MAGENTA="\033[1;35m"
+
 # 欢迎界面和系统基本信息
-echo -e "\033[1;35m欢迎来到 私人服务 系统！\033[0m"
-echo -e "\033[1;34m当前时间：$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
-echo -e "\033[1;34m系统内核版本：$(uname -r)\033[0m"
-echo -e "\033[1;34m系统已运行：$(uptime -p)\033[0m"
+echo -e "${PURPLE}欢迎来到 私人服务 系统！${RESET}"
+echo -e "${BLUE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
+echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
+echo -e "${BLUE}系统已运行：$(uptime -p)${RESET}"
 
 # Sing-box 版本和状态检查
 if command -v sing-box >/dev/null 2>&1; then
     SINGBOX_VERSION=$(sing-box version 2>/dev/null | head -n 1 || echo "未知版本")
-    echo -e "\033[1;32m当前 sing-box 版本:\033[0m $SINGBOX_VERSION"
-    
+    echo -e "${GREEN}当前 sing-box 版本:${RESET} $SINGBOX_VERSION"
     # Sing-box 运行状态
     if systemctl is-active sing-box >/dev/null 2>&1; then
-        echo -e "\033[1;32mSing-box 服务正在运行\033[0m"
-        
+        echo -e "${GREEN}Sing-box 服务正在运行${RESET}"
         # 获取 Sing-box 内存占用
         SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
         if [[ -n "$SINGBOX_MEMORY" ]]; then
-            echo -e "\033[1;34mSing-box 内存占用:\033[0m ${SINGBOX_MEMORY} MB"
+            echo -e "${BLUE}Sing-box 内存占用:${RESET} ${SINGBOX_MEMORY} MB"
         else
-            echo -e "\033[1;31m无法获取 Sing-box 内存占用！\033[0m"
+            echo -e "${RED}无法获取 Sing-box 内存占用！${RESET}"
         fi
     else
-        echo -e "\033[1;31mSing-box 服务未运行\033[0m"
+        echo -e "${RED}Sing-box 服务未运行${RESET}"
     fi
 else
-    echo -e "\033[1;31mSing-box 未安装或不可用！\033[0m"
+    echo -e "${RED}Sing-box 未安装或不可用！${RESET}"
 fi
 
 # 检查 nftables-singbox 服务状态
 if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
     if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
-        echo -e "\033[1;36mNftables-singbox 服务已启用\033[0m"
+        echo -e "${CYAN}Nftables-singbox 服务已启用${RESET}"
     else
-        echo -e "\033[1;35mNftables-singbox 服务未启用\033[0m"
+        echo -e "${MAGENTA}Nftables-singbox 服务未启用${RESET}"
     fi
 else
-    echo -e "\033[1;31mNftables-singbox 服务未安装！\033[0m"
+    echo -e "${RED}Nftables-singbox 服务未安装！${RESET}"
 fi
 
 # 检查nftables防火墙状态
 if command -v nft >/dev/null 2>&1; then
     if systemctl is-active nftables >/dev/null 2>&1; then
-        echo -e "\033[1;36mNftables 防火墙已启用\033[0m"
+        echo -e "${CYAN}Nftables 防火墙已启用${RESET}"
     else
-        echo -e "\033[1;35mNftables 防火墙未运行\033[0m"
+        echo -e "${MAGENTA}Nftables 防火墙未运行${RESET}"
     fi
 else
-    echo -e "\033[1;31mNftables 防火墙未安装！\033[0m"
+    echo -e "${RED}Nftables 防火墙未安装！${RESET}"
 fi
-
-# 定义颜色代码
-RESET="\033[0m"          # 重置颜色
-YELLOW="\033[1;33m"      # 黄色加粗
 
 # 确保 PATH 和 TERM 设置正确
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -78,10 +82,10 @@ echo -e "${YELLOW}当前磁盘使用情况：${RESET}${disk_usage}"
 DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
 GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
 if [[ -n "$DEFAULT_GATEWAY" ]]; then
-    echo -e "\033[1;34m默认网关:\033[0m $DEFAULT_GATEWAY"
-    echo -e "\033[1;34m网关接口:\033[0m $GATEWAY_INTERFACE"
+    echo -e "${BLUE}默认网关:${RESET} $DEFAULT_GATEWAY"
+    echo -e "${BLUE}网关接口:${RESET} $GATEWAY_INTERFACE"
 else
-    echo -e "\033[1;31m未找到默认网关信息！\033[0m"
+    echo -e "${RED}未找到默认网关信息！${RESET}"
 fi
 
 # 显示 DNS 信息
@@ -92,41 +96,46 @@ else
 fi
 
 if [[ -n "$DNS_SERVERS" ]]; then
-    echo -e "\033[1;34mDNS 服务器地址:\033[0m"
+    echo -e "${BLUE}DNS 服务器地址:${RESET}"
     for dns in $DNS_SERVERS; do
         echo "  $dns"
     done
 else
-    echo -e "\033[1;31m未找到 DNS 服务器信息！\033[0m"
+    echo -e "${RED}未找到 DNS 服务器信息！${RESET}"
 fi 
 
 # 获取网络接口、MAC 地址和 IP 地址信息
-echo -e "\n网络接口信息："
+echo -e "${BLUE}网络接口信息：${RESET}"
 for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
     # 跳过回环接口和虚拟接口（如 docker0、br0）
     if [[ "$interface" == "lo" || "$interface" == "docker0" || "$interface" == "br0" ]]; then
         continue
     fi
-
     # 获取 MAC 地址
     MAC_ADDRESS=$(cat /sys/class/net/"$interface"/address 2>/dev/null)
-
     # 获取 IP 地址
     IP_ADDRESS=$(ip -o -4 addr show "$interface" | awk '{print $4}' | cut -d'/' -f1)
-
     # 判断是否为 DHCP 或静态 IP
     IS_DHCP="静态 IP"
-    
     # 检查网络接口配置文件（/etc/network/interfaces）中的配置
     if grep -qE "iface\s+$interface\s+inet\s+dhcp" /etc/network/interfaces 2>/dev/null; then
         IS_DHCP="DHCP 分配"
     elif grep -qE "iface\s+$interface\s+inet\s+static" /etc/network/interfaces 2>/dev/null; then
         IS_DHCP="静态 IP"
     fi
-
     # 输出结果
-    echo -e "\033[1;33m接口:\033[0m $interface"
-    echo -e "  \033[1;34mMAC 地址:\033[0m $MAC_ADDRESS"
-    echo -e "  \033[1;34mIP 地址:\033[0m ${IP_ADDRESS:-未分配}"
-    echo -e "  \033[1;34mIP 类型:\033[0m $IS_DHCP"
+    echo -e "${YELLOW}接口:${RESET} $interface"
+    echo -e "  ${BLUE}MAC 地址:${RESET} $MAC_ADDRESS"
+    echo -e "  ${BLUE}IP 地址:${RESET} ${IP_ADDRESS:-未分配}"
+    echo -e "  ${BLUE}IP 类型:${RESET} $IS_DHCP"
 done
+
+# 检查系统可用更新（仅限 Debian/Ubuntu）
+echo -e "${MAGENTA}系统更新检查：${RESET}"
+UPDATES=$(apt list --upgradable 2>/dev/null | grep -c upgradable)
+if [[ $UPDATES -gt 0 ]]; then
+    echo -e "${YELLOW}可用更新：${RESET}${UPDATES} 个软件包"
+    echo -e "${GREEN}建议执行 'sudo apt update && sudo apt upgrade' 进行更新${RESET}"
+else
+    echo -e "${GREEN}系统已是最新版本，无可用更新。${RESET}"
+fi
