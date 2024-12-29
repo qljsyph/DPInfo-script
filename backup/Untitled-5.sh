@@ -37,6 +37,57 @@ check_code_exists() {
     fi
 }
 
+# 清理空的 SSH_CONNECTION 判断块
+clean_empty_ssh_blocks() {
+    echo "检查并清理空的 SSH_CONNECTION 判断块..."
+    
+    # 创建临时文件
+    local temp_file=$(mktemp)
+    
+    # 使用 awk 删除空的 if [ -n "$SSH_CONNECTION" ]; then...fi 块
+    awk '
+    BEGIN { empty_block = 0; block_start = 0; buffer = "" }
+    /if \[ -n "\$SSH_CONNECTION" \]; then/ { 
+        empty_block = 1
+        block_start = NR
+        buffer = $0 "\n"
+        next 
+    }
+    empty_block == 1 { 
+        buffer = buffer $0 "\n"
+        if ($0 ~ /^[[:space:]]*fi[[:space:]]*$/) {
+            if (buffer !~ /run-parts/) {
+                print "发现空块，行号:", block_start, "-", NR
+                empty_block = 0
+                buffer = ""
+            } else {
+                printf "%s", buffer
+                empty_block = 0
+                buffer = ""
+            }
+        } else if ($0 !~ /^[[:space:]]*$/) {
+            printf "%s", buffer
+            empty_block = 0
+            buffer = ""
+        }
+        next
+    }
+    { print }
+    ' /etc/profile > "$temp_file"
+
+    # 检查是否有变化
+    if ! cmp -s "$temp_file" /etc/profile; then
+        echo "检测到空的 SSH_CONNECTION 判断块，正在清理..."
+        sudo cp "$temp_file" /etc/profile
+        echo "清理完成"
+    else
+        echo "未发现空的 SSH_CONNECTION 判断块"
+    fi
+
+    # 清理临时文件
+    rm -f "$temp_file"
+}
+
 # 下载并设置 MOTD 脚本
 download_motd_script() {
     # 选择操作系统类型：Debian 或 Armbian
@@ -147,6 +198,9 @@ handle_profile_modification() {
     local tool_choice=$1
     local check_code=""
     
+    # 首先清理空的 SSH_CONNECTION 判断块
+    clean_empty_ssh_blocks
+    
     if [ "$tool_choice" == "1" ]; then
         # FinalShell/MobaXterm 的代码块
         check_code='if [ -n "$SSH_CONNECTION" ] && [ -z "$MOTD_SHOWN" ]; then
@@ -160,7 +214,7 @@ fi'
     else
         # 原有的代码块
         check_code='if [ -n "$SSH_CONNECTION" ]; then
- run-parts /etc/update-motd.d
+    run-parts /etc/update-motd.d
 fi'
     fi
 
