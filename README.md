@@ -23,4 +23,4 @@ bash <(curl -sL https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/ba
 - **网络接口信息**
 - 如果信息显示不精准或需要刷新，请尝试运行 ``` run-parts /etc/update-motd.d  ```进行检查校正。
 # 界面展示
-![Image text](https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/picture/1734415354532.jpg)
+![Image text](https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/picture/20241229-111712.png)
