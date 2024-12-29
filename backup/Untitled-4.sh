@@ -117,6 +117,11 @@ handle_profile_modification() {
     export MOTD_SHOWN=1
     run-parts /etc/update-motd.d
 fi'
+        
+        # 清空 /etc/motd 文件
+        echo "正在清空 /etc/motd 文件..."
+        sudo truncate -s 0 /etc/motd
+        echo "/etc/motd 文件已清空。"
     else
         # 原有的代码块
         check_code='if [ -n "$SSH_CONNECTION" ]; then
