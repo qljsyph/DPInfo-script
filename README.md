@@ -22,6 +22,6 @@ bash <(curl -sL https://ghproxy.net/https://raw.githubusercontent.com/qljsyph/ba
 - **网络设置信息**
 - **网络接口信息**
 # Wiki
-https://github.com/qljsyph/bash-script/wiki/首页
+https://github.com/qljsyph/bash-script/wiki/bash%E2%80%90script说明
 # 界面展示
 ![Image text](https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/picture/20241229-111712.png)
