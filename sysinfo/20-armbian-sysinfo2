@@ -1,86 +1,136 @@
 #!/bin/bash
 
-echo "欢迎来到 私人服务 系统！"
-echo -e "\033[35m当前时间：$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
-echo "系统内核版本：$(uname -r)"
+# 定义颜色变量
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+BLUE="\033[1;34m"
+PURPLE="\033[1;35m"
+CYAN="\033[1;36m"
+RESET="\033[0m"
 
-# Sing-box 版本和状态检查
-if command -v sing-box >/dev/null 2>&1; then
-    SINGBOX_VERSION=$(sing-box version 2>/dev/null | head -n 1 || echo "未知版本")
-    echo -e "\033[1;32m当前 sing-box 版本:\033[0m $SINGBOX_VERSION"
-    
-    # Sing-box 运行状态
-    if systemctl is-active sing-box >/dev/null 2>&1; then
-        echo -e "\033[1;32mSing-box 服务正在运行\033[0m"
+# 清屏并显示标题
+clear
+echo -e "${CYAN}欢迎来到私人服务系统！${RESET}"
+echo -e "${PURPLE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
+echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
+
+# Sing-box 状态检查和版本信息
+check_singbox() {
+    if command -v sing-box >/dev/null 2>&1; then
+        CURRENT_VERSION=$(sing-box version 2>/dev/null | head -n 1 | cut -d ' ' -f 3 || echo "未知版本")
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
         
-        # 获取 Sing-box 内存占用
-        SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
-        if [[ -n "$SINGBOX_MEMORY" ]]; then
-            echo -e "\033[1;34mSing-box 内存占用:\033[0m ${SINGBOX_MEMORY} MB"
+        # 格式化版本号
+        CURRENT_VERSION="${CURRENT_VERSION#v}"
+        LATEST_VERSION="${LATEST_VERSION#v}"
+        
+        echo -e "\n${YELLOW}Sing-box 版本信息：${RESET}"
+        echo -e "${BLUE}当前版本：${RESET}${CURRENT_VERSION}"
+        
+        if [[ -n "$LATEST_VERSION" ]]; then
+            echo -e "${BLUE}最新版本：${RESET}${LATEST_VERSION}"
+            if [[ "$CURRENT_VERSION" == "$LATEST_VERSION" ]]; then
+                echo -e "${GREEN}Sing-box 已是最新版本${RESET}"
+            else
+                echo -e "${YELLOW}发现新版本！建议更新 Sing-box${RESET}"
+            fi
         else
-            echo -e "\033[1;31m无法获取 Sing-box 内存占用！\033[0m"
+            echo -e "${RED}无法获取 Sing-box 最新版本信息${RESET}"
+        fi
+
+        # Sing-box 运行状态
+        if systemctl is-active sing-box >/dev/null 2>&1; then
+            echo -e "${GREEN}Sing-box 服务正在运行${RESET}"
+            SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
+            if [[ -n "$SINGBOX_MEMORY" ]]; then
+                echo -e "${BLUE}Sing-box 内存占用:${RESET} ${SINGBOX_MEMORY} MB"
+            else
+                echo -e "${RED}无法获取 Sing-box 内存占用！${RESET}"
+            fi
+        else
+            echo -e "${RED}Sing-box 服务未运行${RESET}"
         fi
     else
-        echo -e "\033[1;31mSing-box 服务未运行\033[0m"
+        echo -e "${RED}Sing-box 未安装或不可用！${RESET}"
     fi
-else
-    echo -e "\033[1;31mSing-box 未安装或不可用！\033[0m"
-fi
+}
 
-# 检查 nftables-singbox 服务状态
-if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
-    if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
-        echo -e "\033[1;36mNftables-singbox 服务已启用\033[0m"
+# 检查服务状态
+check_services() {
+    echo -e "\n${CYAN}服务状态检查：${RESET}"
+    
+    # 检查 nftables-singbox 服务
+    if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
+        if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
+            echo -e "${CYAN}Nftables-singbox 服务已启用${RESET}"
+        else
+            echo -e "${PURPLE}Nftables-singbox 服务未启用${RESET}"
+        fi
     else
-        echo -e "\033[1;35mNftables-singbox 服务未启用\033[0m"
+        echo -e "${RED}Nftables-singbox 服务未安装！${RESET}"
     fi
-else
-    echo -e "\033[1;31mNftables-singbox 服务未安装！\033[0m"
-fi
 
-# 检查防火墙状态
-if command -v nft >/dev/null 2>&1; then
-    if systemctl is-active nftables >/dev/null 2>&1; then
-        echo -e "\033[1;36mNftables 防火墙已启用\033[0m"
+    # 检查防火墙状态
+    if command -v nft >/dev/null 2>&1; then
+        if systemctl is-active nftables >/dev/null 2>&1; then
+            echo -e "${CYAN}Nftables 防火墙已启用${RESET}"
+        else
+            echo -e "${PURPLE}Nftables 防火墙未运行${RESET}"
+        fi
     else
-        echo -e "\033[1;35mNftables 防火墙未运行\033[0m"
+        echo -e "${RED}Nftables 防火墙未安装！${RESET}"
     fi
-else
-    echo -e "\033[1;31mNftables 防火墙未安装！\033[0m"
-fi
+}
 
-# 显示 CPU 使用率
-echo "CPU 使用率："
-top -bn1 | grep "Cpu(s)" | awk '{if (NF >= 8) print "  使用率: " $2 "%, 空闲: " $8 "%"}'
+# 系统资源信息
+check_system_resources() {
+    echo -e "\n${CYAN}系统资源信息：${RESET}"
+    
+    # CPU 使用率
+    CPU_INFO=$(top -bn1 | grep "Cpu(s)" | awk '{if (NF >= 8) printf "使用率: %.1f%%, 空闲: %.1f%%", $2, $8}')
+    echo -e "${BLUE}CPU 状态：${RESET}${CPU_INFO}"
+    
+    # 内存使用情况
+    MEM_INFO=$(free -h | awk '/^Mem/ {printf "%s/%s (%.1f%%)", $3, $2, $3/$2*100}')
+    echo -e "${BLUE}内存使用：${RESET}${MEM_INFO}"
+    
+    # 磁盘使用情况
+    DISK_INFO=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')
+    echo -e "${BLUE}磁盘使用：${RESET}${DISK_INFO}"
+}
 
-# 显示内存使用情况
-echo "当前内存使用情况: $(free -h | awk '/^Mem/ {printf "%s/%s (%.2f%%)\n", $3, $2, $3/$2*100}')"
+# 网络信息
+check_network() {
+    echo -e "\n${CYAN}网络信息：${RESET}"
+    
+    # 网关信息
+    DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
+    GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
+    if [[ -n "$DEFAULT_GATEWAY" ]]; then
+        echo -e "${BLUE}默认网关：${RESET}${DEFAULT_GATEWAY}"
+        echo -e "${BLUE}网关接口：${RESET}${GATEWAY_INTERFACE}"
+    else
+        echo -e "${RED}未找到默认网关信息！${RESET}"
+    fi
 
-# 显示磁盘使用情况
-echo "当前磁盘使用情况: $(df -h / 2>/dev/null | awk 'NR==2 {print $5}')"
+    # DNS 信息
+    if [[ -f /run/systemd/resolve/resolv.conf ]]; then
+        DNS_SERVERS=$(grep '^nameserver' /run/systemd/resolve/resolv.conf | awk '{print $2}')
+    else
+        DNS_SERVERS=$(grep '^nameserver' /etc/resolv.conf | awk '{print $2}')
+    fi
+    
+    if [[ -n "$DNS_SERVERS" ]]; then
+        echo -e "${BLUE}DNS 服务器：${RESET}"
+        echo "$DNS_SERVERS" | sed 's/^/  /'
+    else
+        echo -e "${RED}未找到 DNS 服务器信息！${RESET}"
+    fi
+}
 
-# 显示网关信息
-DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
-GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
-if [[ -n "$DEFAULT_GATEWAY" ]]; then
-    echo -e "\033[1;34m默认网关:\033[0m $DEFAULT_GATEWAY"
-    echo -e "\033[1;34m网关接口:\033[0m $GATEWAY_INTERFACE"
-else
-    echo -e "\033[1;31m未找到默认网关信息！\033[0m"
-fi
-
-# 显示 DNS 信息
-if [[ -f /run/systemd/resolve/resolv.conf ]]; then
-    DNS_SERVERS=$(grep '^nameserver' /run/systemd/resolve/resolv.conf | awk '{print $2}')
-else
-    DNS_SERVERS=$(grep '^nameserver' /etc/resolv.conf | awk '{print $2}')
-fi
-
-if [[ -n "$DNS_SERVERS" ]]; then
-    echo -e "\033[1;34mDNS 服务器地址:\033[0m"
-    for dns in $DNS_SERVERS; do
-        echo "  $dns"
-    done
-else
-    echo -e "\033[1;31m未找到 DNS 服务器信息！\033[0m"
-fi
+# 执行所有检查
+check_singbox
+check_services
+check_system_resources
+check_network
