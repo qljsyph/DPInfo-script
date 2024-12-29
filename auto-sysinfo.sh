@@ -25,11 +25,6 @@ check_bc_installed() {
     fi
 }
 
-# 检查的代码块
-check_code='if [ -n "$SSH_CONNECTION" ]; then
- run-parts /etc/update-motd.d
-fi'
-
 # 精确检查代码块是否存在（忽略空白和换行）
 check_code_exists() {
     local normalized_file=$(grep -v '^\s*$' /etc/profile | tr -d '[:space:]')
@@ -111,12 +106,29 @@ download_motd_script() {
     fi
 }
 
-# 主脚本逻辑
-main() {
-    # 检查是否安装了 bc
-    check_bc_installed
+# 检查并添加代码块到 /etc/profile
+handle_profile_modification() {
+    local tool_choice=$1
+    local check_code=""
+    
+    if [ "$tool_choice" == "1" ]; then
+        # FinalShell/MobaXterm 的代码块
+        check_code='if [ -n "$SSH_CONNECTION" ] && [ -z "$MOTD_SHOWN" ]; then
+    export MOTD_SHOWN=1
+    run-parts /etc/update-motd.d
+fi'
+        
+        # 清空 /etc/motd 文件
+        echo "正在清空 /etc/motd 文件..."
+        sudo truncate -s 0 /etc/motd
+        echo "/etc/motd 文件已清空。"
+    else
+        # 原有的代码块
+        check_code='if [ -n "$SSH_CONNECTION" ]; then
+ run-parts /etc/update-motd.d
+fi'
+    fi
 
-    # 检查并添加代码块到 /etc/profile
     if ! check_code_exists "$check_code"; then
         echo "未找到完全匹配的代码块，准备添加..."
 
@@ -125,7 +137,7 @@ main() {
 
         if [ "$existing_count" -gt 0 ]; then
             echo "警告：已存在类似的代码块（$existing_count 处）"
-            echo "请手动检查 /etc/profile 文件中是否需要去重"
+            echo "请手动检查 /etc/profile 中包含update-motd.d的完整代码块，确认后手动删除重新执行脚本。"
             exit 1
         fi
 
@@ -139,6 +151,27 @@ main() {
     else
         echo "完整的代码块已存在于模块，跳过添加"
     fi
+}
+
+# 主脚本逻辑
+main() {
+    # 检查是否安装了 bc
+    check_bc_installed
+
+    # 选择工具类型
+    echo "请选择使用的工具类型："
+    echo "1. FinalShell/MobaXterm"
+    echo "2. 其他工具(ServerBox等)"
+    read -p "请输入选项 (1 或 2): " tool_choice
+
+    # 验证输入
+    if [[ ! "$tool_choice" =~ ^[12]$ ]]; then
+        echo "无效的选项，请输入 1 或 2"
+        exit 1
+    fi
+
+    # 处理 profile 修改
+    handle_profile_modification "$tool_choice"
 
     # 执行下载 MOTD 脚本
     download_motd_script
