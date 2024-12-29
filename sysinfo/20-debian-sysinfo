@@ -150,13 +150,3 @@ for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
     echo -e "  ${BLUE}IP 地址:${RESET} ${IP_ADDRESS:-未分配}"
     echo -e "  ${BLUE}IP 类型:${RESET} $IS_DHCP"
 done
-
-# 检查系统可用更新（仅限 Debian/Ubuntu）
-echo -e "${MAGENTA}系统更新检查：${RESET}"
-UPDATES=$(apt list --upgradable 2>/dev/null | grep -c upgradable)
-if [[ $UPDATES -gt 0 ]]; then
-    echo -e "${YELLOW}可用更新：${RESET}${UPDATES} 个软件包"
-    echo -e "${GREEN}建议执行 'sudo apt update && sudo apt upgrade' 进行更新${RESET}"
-else
-    echo -e "${GREEN}系统已是最新版本，无可用更新。${RESET}"
-fi
