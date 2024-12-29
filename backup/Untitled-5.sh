@@ -37,55 +37,18 @@ check_code_exists() {
     fi
 }
 
-# 清理空的 SSH_CONNECTION 判断块
-clean_empty_ssh_blocks() {
-    echo "检查并清理空的 SSH_CONNECTION 判断块..."
-    
-    # 创建临时文件
-    local temp_file=$(mktemp)
-    
-    # 使用 awk 删除空的 if [ -n "$SSH_CONNECTION" ]; then...fi 块
-    awk '
-    BEGIN { empty_block = 0; block_start = 0; buffer = "" }
-    /if \[ -n "\$SSH_CONNECTION" \]; then/ { 
-        empty_block = 1
-        block_start = NR
-        buffer = $0 "\n"
-        next 
-    }
-    empty_block == 1 { 
-        buffer = buffer $0 "\n"
-        if ($0 ~ /^[[:space:]]*fi[[:space:]]*$/) {
-            if (buffer !~ /run-parts/) {
-                print "发现空块，行号:", block_start, "-", NR
-                empty_block = 0
-                buffer = ""
-            } else {
-                printf "%s", buffer
-                empty_block = 0
-                buffer = ""
-            }
-        } else if ($0 !~ /^[[:space:]]*$/) {
-            printf "%s", buffer
-            empty_block = 0
-            buffer = ""
-        }
-        next
-    }
-    { print }
-    ' /etc/profile > "$temp_file"
+# 获取所有相似的代码块
+get_similar_code_blocks() {
+    local search_code='run-parts /etc/update-motd.d'
+    grep -n "$search_code" /etc/profile
+}
 
-    # 检查是否有变化
-    if ! cmp -s "$temp_file" /etc/profile; then
-        echo "检测到空的 SSH_CONNECTION 判断块，正在清理..."
-        sudo cp "$temp_file" /etc/profile
-        echo "清理完成"
-    else
-        echo "未发现空的 SSH_CONNECTION 判断块"
-    fi
-
-    # 清理临时文件
-    rm -f "$temp_file"
+# 删除指定行号范围的代码块
+delete_code_blocks() {
+    local start_line=$1
+    local end_line=$2
+    sudo sed -i "${start_line},${end_line}d" /etc/profile
+    echo "删除了行 $start_line 到 $end_line 的代码块。"
 }
 
 # 下载并设置 MOTD 脚本
@@ -157,49 +120,10 @@ download_motd_script() {
     fi
 }
 
-# 备份并显示现有代码块
-backup_and_show_existing_code() {
-    local timestamp=$(date +%Y%m%d_%H%M%S)
-    local backup_file="/tmp/profile_backup_${timestamp}"
-    
-    # 创建备份
-    sudo cp /etc/profile "$backup_file"
-    echo "已创建备份文件：$backup_file"
-    
-    # 查找并显示现有代码块
-    echo "现有的相似代码块及其位置："
-    echo "----------------------------------------"
-    grep -n "run-parts /etc/update-motd.d" /etc/profile | while IFS=: read -r line_num content; do
-        echo "行号: $line_num"
-        echo "内容: $content"
-        # 显示上下文（各显示1行）
-        echo "上下文:"
-        sed -n "$((line_num-1)),$((line_num+1))p" /etc/profile
-        echo "----------------------------------------"
-    done
-    
-    echo "请注意：如需手动恢复，可以使用以下命令："
-    echo "sudo cp $backup_file /etc/profile"
-    
-    # 询问是否继续
-    read -p "是否确认删除现有代码块并继续？(y/n): " confirm
-    if [[ "$confirm" != "y" ]]; then
-        echo "操作已取消"
-        exit 1
-    fi
-    
-    # 删除现有代码块
-    sudo sed -i '/run-parts.*\/etc\/update-motd.d/d' /etc/profile
-    echo "已删除现有代码块"
-}
-
 # 检查并添加代码块到 /etc/profile
 handle_profile_modification() {
     local tool_choice=$1
     local check_code=""
-    
-    # 首先清理空的 SSH_CONNECTION 判断块
-    clean_empty_ssh_blocks
     
     if [ "$tool_choice" == "1" ]; then
         # FinalShell/MobaXterm 的代码块
@@ -207,37 +131,44 @@ handle_profile_modification() {
     export MOTD_SHOWN=1
     run-parts /etc/update-motd.d
 fi'
+        
         # 清空 /etc/motd 文件
-        echo "清空 /etc/motd 文件..."
+        echo "正在清空 /etc/motd 文件..."
         sudo truncate -s 0 /etc/motd
-        echo "/etc/motd 已清空"
+        echo "/etc/motd 文件已清空。"
     else
         # 原有的代码块
         check_code='if [ -n "$SSH_CONNECTION" ]; then
-    run-parts /etc/update-motd.d
+ run-parts /etc/update-motd.d
 fi'
     fi
 
-    if ! check_code_exists "$check_code"; then
-        echo "检查是否存在类似的代码块..."
-        
-        # 检查是否存在相似的代码块
-        existing_count=$(grep -c "run-parts /etc/update-motd.d" /etc/profile)
+    # 检查是否存在相似代码块
+    similar_code_blocks=$(get_similar_code_blocks)
 
-        if [ "$existing_count" -gt 0 ]; then
-            echo "警告：已存在类似的代码块（$existing_count 处）"
-            backup_and_show_existing_code
+    if [ -n "$similar_code_blocks" ]; then
+        echo "找到以下相似的代码块："
+        echo "$similar_code_blocks"
+        read -p "是否删除上述代码块并继续添加新的代码块？(y/n): " delete_choice
+
+        if [[ "$delete_choice" == "y" || "$delete_choice" == "Y" ]]; then
+            # 获取删除的行号范围
+            start_line=$(echo "$similar_code_blocks" | head -n 1 | cut -d ':' -f 1)
+            end_line=$(echo "$similar_code_blocks" | tail -n 1 | cut -d ':' -f 1)
+
+            # 删除相似的代码块
+            delete_code_blocks "$start_line" "$end_line"
+
+            # 添加新的代码块
+            echo "$check_code" | sudo tee -a /etc/profile > /dev/null
+            echo "新的代码块已成功添加到 /etc/profile。"
+        else
+            echo "取消删除操作，跳过添加新代码块。"
         fi
-
-        # 确保文件以换行结尾
-        sudo sed -i -e '$a\\' /etc/profile
-
-        # 追加新的代码块
-        echo "$check_code" | sudo tee -a /etc/profile > /dev/null
-
-        echo "新的代码块已成功添加到模块"
     else
-        echo "完整的代码块已存在于模块，跳过添加"
+        # 如果没有找到相似的代码块，直接添加新代码块
+        echo "$check_code" | sudo tee -a /etc/profile > /dev/null
+        echo "新的代码块已成功添加到 /etc/profile。"
     fi
 }
 
