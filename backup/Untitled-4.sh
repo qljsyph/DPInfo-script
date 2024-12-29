@@ -137,7 +137,7 @@ fi'
 
         if [ "$existing_count" -gt 0 ]; then
             echo "警告：已存在类似的代码块（$existing_count 处）"
-            echo "请手动检查 /etc/profile 中包含update-motd.d的完整代码块，确认后手动删除。"
+            echo "请手动检查 /etc/profile 中包含update-motd.d的完整代码块，确认后手动删除重新执行脚本。"
             exit 1
         fi
 
