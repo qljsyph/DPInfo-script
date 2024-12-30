@@ -99,16 +99,6 @@ echo -e "${YELLOW}当前内存使用情况：${RESET}$((mem_used / 1024))/$((mem
 disk_usage=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')
 echo -e "${YELLOW}当前磁盘使用情况：${RESET}${disk_usage}"
 
-# 显示网关信息
-DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
-GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
-if [[ -n "$DEFAULT_GATEWAY" ]]; then
-    echo -e "${BLUE}默认网关:${RESET} $DEFAULT_GATEWAY"
-    echo -e "${BLUE}网关接口:${RESET} $GATEWAY_INTERFACE"
-else
-    echo -e "${RED}未找到默认网关信息！${RESET}"
-fi
-
 # 显示 DNS 信息
 if [[ -f /run/systemd/resolve/resolv.conf ]]; then
     DNS_SERVERS=$(grep '^nameserver' /run/systemd/resolve/resolv.conf | awk '{print $2}')
@@ -116,14 +106,33 @@ else
     DNS_SERVERS=$(grep '^nameserver' /etc/resolv.conf | awk '{print $2}')
 fi
 
+echo -n -e "${YELLOW}DNS 服务器地址:${RESET} "
 if [[ -n "$DNS_SERVERS" ]]; then
-    echo -e "${BLUE}DNS 服务器地址:${RESET}"
     for dns in $DNS_SERVERS; do
-        echo "  $dns"
+        echo -n "  $dns"
     done
+    echo
 else
     echo -e "${RED}未找到 DNS 服务器信息！${RESET}"
 fi 
+
+# 显示默认网关信息
+DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
+echo -n -e "${YELLOW}默认网关:${RESET} "
+if [[ -n "$DEFAULT_GATEWAY" ]]; then
+    echo "$DEFAULT_GATEWAY"
+else
+    echo -e "${RED}未找到默认网关信息！${RESET}"
+fi
+
+# 显示网关接口信息
+GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
+echo -n -e "${YELLOW}网关接口:${RESET} "
+if [[ -n "$GATEWAY_INTERFACE" ]]; then
+    echo "$GATEWAY_INTERFACE"
+else
+    echo -e "${RED}未找到网关接口信息！${RESET}"
+fi
 
 # 获取网络接口、MAC 地址和 IP 地址信息
 echo -e "${BLUE}网络接口信息：${RESET}"
@@ -150,5 +159,6 @@ for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
     echo -e "  ${BLUE}IP 地址:${RESET} ${IP_ADDRESS:-未分配}"
     echo -e "  ${BLUE}IP 类型:${RESET} $IS_DHCP"
 done
+
 # 退出脚本，确保没有交互式 shell
 exit
