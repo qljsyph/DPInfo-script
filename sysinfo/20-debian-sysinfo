@@ -150,3 +150,5 @@ for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
     echo -e "  ${BLUE}IP 地址:${RESET} ${IP_ADDRESS:-未分配}"
     echo -e "  ${BLUE}IP 类型:${RESET} $IS_DHCP"
 done
+# 退出脚本，确保没有交互式 shell
+exit
