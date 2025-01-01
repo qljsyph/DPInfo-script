@@ -1,5 +1,5 @@
 #!/bin/bash
-# v1.1.2
+#v1.1.1
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -113,7 +113,7 @@ fi"
             echo "请手动检查 /etc/profile 中包含update-motd.d的完整代码块，确认后手动删除重新执行脚本。"
             exit 1
         fi
-        sudo sed -i -e '$a\\' /etc/profile
+        sudo sed -i -e '$a\' /etc/profile
         echo "$check_code" | sudo tee -a /etc/profile > /dev/null
         echo "代码块已成功添加到模块"
     else
