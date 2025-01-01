@@ -52,7 +52,7 @@ download_motd_script() {
             [ -f "$file" ] && sudo rm -f "$file"
         done
         curl -s -o "$file_dest_1" "$file_url_1" && curl -s -o "$file_dest_2" "$file_url_2"
-        if [ $? -eq 0 ]; then
+        if curl -s -o "$file_dest_1" "$file_url_1" && curl -s -o "$file_dest_2" "$file_url_2"; then
             chmod 755 "$file_dest_1" "$file_dest_2"
             echo "文件1和文件2已成功下载并设置权限为 755。"
         else
@@ -62,7 +62,7 @@ download_motd_script() {
     else
         [ -f "$file_dest" ] && sudo rm -f "$file_dest"
         curl -s -o "$file_dest" "$file_url"
-        if [ $? -eq 0 ]; then
+        if curl -s -o "$file_dest" "$file_url"; then
             chmod 755 "$file_dest"
             echo "Armbian 文件已成功下载并设置权限为 755。"
         else
@@ -97,7 +97,7 @@ fi"
             echo "警告：已存在类似的代码块，请手动检查 /etc/profile 中包含update-motd.d的完整代码块，确认后手动删除重新执行脚本。"
             exit 1
         fi
-        sudo sed -i -e '$a\\' /etc/profile
+        sudo sed -i -e '$a\' /etc/profile
         echo "$check_code" | sudo tee -a /etc/profile > /dev/null
         echo "代码块已成功添加到模块"
     else
