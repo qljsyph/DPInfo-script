@@ -44,17 +44,17 @@ download_motd_script() {
         done
         file_url_1="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
         file_url_2="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
-        echo "正在下载 20-debian-sysinfo 文件..."
+        echo "正在下载文件2..."
         curl -s -o "/etc/update-motd.d/20-debian-sysinfo" "$file_url_1"
         download_status_1=$?
-        echo "正在下载 00-debian-heads 文件..."
+        echo "正在下载文件1..."
         curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_2"
         download_status_2=$?
         if [ $download_status_1 -eq 0 ] && [ $download_status_2 -eq 0 ]; then
             chmod 755 /etc/update-motd.d/{20-debian-sysinfo,00-debian-heads}
-            echo "Debian 文件已成功下载并设置权限为 755。"
+            echo "文件2和文件1已成功下载并设置权限为 755。"
         else
-            echo "文件下载失败! 错误信息：$download_status_2"
+            echo "文件下载失败! 错误信息：文件2下载状态：$download_status_1，文件1下载状态：$download_status_2"
             exit 1
         fi
     elif [ "$os_type" == "armbian" ]; then
