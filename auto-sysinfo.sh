@@ -1,5 +1,5 @@
 #!/bin/bash
-#v1.1.1
+#v1.1.2
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -21,68 +21,56 @@ check_bc_installed() {
 }
 
 check_code_exists() {
-    local normalized_file
+    local normalized_file normalized_code
     normalized_file=$(grep -v '^\s*$' /etc/profile | tr -d '[:space:]')
-    local normalized_code
     normalized_code=$(echo "$1" | tr -d '[:space:]')
-    if [[ "$normalized_file" == *"$normalized_code"* ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ "$normalized_file" == *"$normalized_code"* ]]
 }
 
 download_motd_script() {
     read -r -p "请选择操作系统类型 (输入debian/armbian/回车退出): " os_type
     os_type=${os_type,,}
+    case "$os_type" in
+        debian)
+            local file_dest_1="/etc/update-motd.d/00-debian-heads"
+            local file_dest_2="/etc/update-motd.d/20-debian-sysinfo"
+            local file_url_1="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
+            local file_url_2="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
+            ;;
+        armbian)
+            local file_dest="/etc/update-motd.d/20-armbian-sysinfo2"
+            local file_url="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
+            ;;
+        *)
+            echo "无效的操作系统类型，退出脚本。"
+            exit 1
+            ;;
+    esac
+
     if [ "$os_type" == "debian" ]; then
-        file_dest_1="/etc/update-motd.d/00-debian-heads"
-        file_dest_2="/etc/update-motd.d/20-debian-sysinfo"
-        if [ -f "$file_dest_1" ]; then
-            echo "文件1已存在，删除旧文件..."
-            sudo rm -f "$file_dest_1"
-        fi
-        if [ -f "$file_dest_2" ]; then
-            echo "文件2已存在，删除旧文件..."
-            sudo rm -f "$file_dest_2"
-        fi
-        file_url_1="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
-        file_url_2="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
-        echo "正在下载文件1..."
-        curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_1"
-        download_status_1=$?
-        echo "正在下载文件2..."
-        curl -s -o "/etc/update-motd.d/20-debian-sysinfo" "$file_url_2"
-        download_status_2=$?
-        if [ $download_status_1 -eq 0 ] && [ $download_status_2 -eq 0 ]; then
-            chmod 755 /etc/update-motd.d/{00-debian-heads,20-debian-sysinfo}
+        for file in "$file_dest_1" "$file_dest_2"; do
+            [ -f "$file" ] && sudo rm -f "$file"
+        done
+        curl -s -o "$file_dest_1" "$file_url_1" && curl -s -o "$file_dest_2" "$file_url_2"
+        if [ $? -eq 0 ]; then
+            chmod 755 "$file_dest_1" "$file_dest_2"
             echo "文件1和文件2已成功下载并设置权限为 755。"
         else
-            echo "文件下载失败! 错误信息：文件1下载状态：$download_status_1，文件2下载状态：$download_status_2"
-            exit 1
-        fi
-    elif [ "$os_type" == "armbian" ]; then
-        file_url="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
-        file_name="20-armbian-sysinfo2"
-        file_dest="/etc/update-motd.d/$file_name"
-        if [ -f "$file_dest" ]; then
-            echo "文件 $file_name 已存在，删除旧文件..."
-            sudo rm -f "$file_dest"
-        fi
-        echo "正在从 GitHub 下载 Armbian 文件..."
-        curl -s -o "$file_dest" "$file_url"
-        download_status=$?
-        if [ $download_status -eq 0 ]; then
-            chmod 755 "$file_dest"
-            echo "Armbian 文件已成功下载并设置权限为 755。"
-        else
-            echo "文件下载失败! 错误信息：$download_status"
+            echo "文件下载失败!"
             exit 1
         fi
     else
-        echo "无效的操作系统类型，退出脚本。"
-        exit 1
+        [ -f "$file_dest" ] && sudo rm -f "$file_dest"
+        curl -s -o "$file_dest" "$file_url"
+        if [ $? -eq 0 ]; then
+            chmod 755 "$file_dest"
+            echo "Armbian 文件已成功下载并设置权限为 755。"
+        else
+            echo "文件下载失败!"
+            exit 1
+        fi
     fi
+
     if grep -q "bc" "$file_dest"; then
         echo "检测到脚本使用了 bc依赖，确保其已正确安装..."
         check_bc_installed
@@ -97,20 +85,16 @@ handle_profile_modification() {
     export MOTD_SHOWN=1
     run-parts /etc/update-motd.d
 fi"
-        echo -e "\e[31m正在清空标志区文件...\e[0m"
         sudo truncate -s 0 /etc/motd
-        echo -e "\e[31m标志区文件已清空。\e[0m"
     else
         check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
  run-parts /etc/update-motd.d
 fi"
     fi
+
     if ! check_code_exists "$check_code"; then
-        echo "未找到完全匹配的代码块，准备添加..."
-        existing_count=$(grep -c "run-parts /etc/update-motd.d" /etc/profile)
-        if [ "$existing_count" -gt 0 ]; then
-            echo "警告：已存在类似的代码块（$existing_count 处）"
-            echo "请手动检查 /etc/profile 中包含update-motd.d的完整代码块，确认后手动删除重新执行脚本。"
+        if grep -q "run-parts /etc/update-motd.d" /etc/profile; then
+            echo "警告：已存在类似的代码块，请手动检查 /etc/profile 中包含update-motd.d的完整代码块，确认后手动删除重新执行脚本。"
             exit 1
         fi
         sudo sed -i -e '$a\\' /etc/profile
@@ -136,5 +120,3 @@ main() {
 }
 
 main
-
-exit
