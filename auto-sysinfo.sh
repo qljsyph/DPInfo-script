@@ -93,9 +93,9 @@ handle_profile_modification() {
     export MOTD_SHOWN=1
     run-parts /etc/update-motd.d
 fi"
-        echo "正在清空 /etc/motd 文件..."
+        echo -e "\e[31m正在清空标志区文件...\e[0m"
         sudo truncate -s 0 /etc/motd
-        echo "/etc/motd 文件已清空。"
+        echo -e "\e[31m标志区文件已清空。\e[0m"
     else
         check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
  run-parts /etc/update-motd.d
