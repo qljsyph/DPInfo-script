@@ -38,7 +38,11 @@ download_motd_script() {
         for file_name in "00-debian-heads" "20-debian-sysinfo"; do
             file_dest="/etc/update-motd.d/$file_name"
             if [ -f "$file_dest" ]; then
-                echo "文件 $file_name 已存在，删除旧文件..."
+                if [ "$file_name" == "00-debian-heads" ]; then
+                    echo "文件1已存在，删除旧文件..."
+                else
+                    echo "文件2已存在，删除旧文件..."
+                fi
                 sudo rm -f "$file_dest"
             fi
         done
