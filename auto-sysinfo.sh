@@ -1,4 +1,5 @@
 #!/bin/bash
+#v1.1.1
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -35,13 +36,16 @@ download_motd_script() {
     read -r -p "请选择操作系统类型 (输入debian/armbian/回车退出): " os_type
     os_type=${os_type,,}
     if [ "$os_type" == "debian" ]; then
-        for file_name in "00-debian-heads" "20-debian-sysinfo"; do
-            file_dest="/etc/update-motd.d/$file_name"
-            if [ -f "$file_dest" ]; then
-                echo "文件已存在，删除旧文件..."
-                sudo rm -f "$file_dest"
-            fi
-        done
+        file_dest_1="/etc/update-motd.d/00-debian-heads"
+        file_dest_2="/etc/update-motd.d/20-debian-sysinfo"
+        if [ -f "$file_dest_1" ]; then
+            echo "文件1已存在，删除旧文件..."
+            sudo rm -f "$file_dest_1"
+        fi
+        if [ -f "$file_dest_2" ]; then
+            echo "文件2已存在，删除旧文件..."
+            sudo rm -f "$file_dest_2"
+        fi
         file_url_1="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
         file_url_2="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
         echo "正在下载文件1..."
@@ -80,7 +84,7 @@ download_motd_script() {
         exit 1
     fi
     if grep -q "bc" "$file_dest"; then
-        echo "检测到 MOTD 脚本使用了 bc，确保其已正确安装..."
+        echo "检测到脚本使用了 bc依赖，确保其已正确安装..."
         check_bc_installed
     fi
 }
