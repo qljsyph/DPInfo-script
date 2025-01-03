@@ -58,15 +58,15 @@ else
     echo -e "${RED}Sing-box 未安装或不可用！${RESET}"
 fi
 
-# 检查 nftables-singbox 服务状态
+# 检查 nftables-singbox 自启动状态
 if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
     if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
-        echo -e "${CYAN}Nftables-singbox 服务已启用${RESET}"
+        echo -e "${CYAN}Nftables-singbox 自启动服务已启用${RESET}"
     else
-        echo -e "${MAGENTA}Nftables-singbox 服务未启用${RESET}"
+        echo -e "${MAGENTA}Nftables-singbox 自启动服务未启用${RESET}"
     fi
 else
-    echo -e "${RED}Nftables-singbox 服务未安装！${RESET}"
+    echo -e "${RED}Nftables-singbox 自启动服务未安装！${RESET}"
 fi
 
 # 检查nftables防火墙状态
