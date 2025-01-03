@@ -1,7 +1,7 @@
 # 自动系统信息显示脚本
 适合armbian和debian系统server模式显示系统信息，使用前需看wiki。当前网络环境下如果无法拉取请尝试删除镜像加速地址，armbian和debian显示内容略有区别已基本满足使用。
 # 版本
-版本: 1.0.6  https://ghp.ci/暂停使用（使用https://ghproxy.net/）
+版本: 1.1.3  https://ghp.ci/暂停使用（使用https://ghproxy.net/）
 # 更新方式
 重新执行一键脚本下载对应系统文件
 ## 一键脚本：
