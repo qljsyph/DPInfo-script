@@ -59,7 +59,7 @@ check_singbox() {
 # 检查服务状态
 check_services() {
     echo -e "\n${CYAN}服务状态检查：${RESET}"
-    
+
     # 检查 nftables-singbox 服务
     if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
         if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
