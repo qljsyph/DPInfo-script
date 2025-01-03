@@ -14,6 +14,7 @@ bash <(curl -sL https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-
 - **检测singbox版本提示更新**
 - **singbox运行状态**
 - **singbox内存占用**
+- **singbox自启动状态**
 - **防火墙singbox服务状态**
 - **防火墙状态**
 - **cpu使用率**
