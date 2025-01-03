@@ -12,7 +12,7 @@ RESET="\033[0m"
 echo -e "${CYAN}欢迎来到私人服务系统！${RESET}"
 echo -e "${PURPLE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
 echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
-echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本1.0.7 ${RESET}"
+echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本1.1.3 ${RESET}"
 
 # Sing-box 状态检查和版本信息
 check_singbox() {
