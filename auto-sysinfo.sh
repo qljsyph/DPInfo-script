@@ -123,6 +123,7 @@ fi"
 
 main() {
     check_bc_installed
+    download_motd_script
     echo "请选择使用的工具类型："
     echo "1. FinalShell/MobaXterm"
     echo "2. 其他工具(ServerBox等)"
@@ -132,7 +133,6 @@ main() {
         exit 1
     fi
     handle_profile_modification "$tool_choice"
-    download_motd_script
 }
 
 main
