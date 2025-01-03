@@ -62,12 +62,12 @@ check_services() {
     # 检查 nftables-singbox 服务
     if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
         if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
-            echo -e "${CYAN}Nftables-singbox 服务已启用${RESET}"
+            echo -e "${CYAN}sing-box自启动服务已启用${RESET}"
         else
-            echo -e "${PURPLE}Nftables-singbox 服务未启用${RESET}"
+            echo -e "${PURPLE}sing-box自启动服务未启用${RESET}"
         fi
     else
-        echo -e "${RED}Nftables-singbox 服务未安装！${RESET}"
+        echo -e "${RED}sing-box自启动服务未安装！${RESET}"
     fi
 
     # 检查防火墙状态
