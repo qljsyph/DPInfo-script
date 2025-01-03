@@ -25,4 +25,7 @@ bash <(curl -sL https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-
 # Wiki
 https://github.com/qljsyph/bash-script/wiki/bash%E2%80%90script说明
 # 界面展示
-![Image text](https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/picture/20241229-111712.png)
+- **Debian**
+![Image text](https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/picture/1735899502390.jpg)
+- **Armbian**
+![Image text](https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/picture/1735899414883.jpg)
