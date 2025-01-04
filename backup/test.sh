@@ -35,23 +35,27 @@ download_motd_script() {
     read -r -p "请选择操作系统类型 (输入debian/armbian/回车退出): " os_type
     os_type=${os_type,,}
     if [ "$os_type" == "debian" ]; then
-        for file_name in "20-debian-sysinfo" "00-debian-heads"; do
+        for file_name in "00-debian-heads" "20-debian-sysinfo"; do
             file_dest="/etc/update-motd.d/$file_name"
             if [ -f "$file_dest" ]; then
-                echo "文件 $file_name 已存在，删除旧文件..."
+                if [ "$file_name" == "00-debian-heads" ]; then
+                    echo "文件1已存在，删除旧文件..."
+                else
+                    echo "文件2已存在，删除旧文件..."
+                fi
                 sudo rm -f "$file_dest"
             fi
         done
-        file_url_1="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
-        file_url_2="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
-        echo "正在下载 20-debian-sysinfo 文件..."
-        curl -s -o "/etc/update-motd.d/20-debian-sysinfo" "$file_url_1"
+        file_url_1="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
+        file_url_2="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
+        echo "正在下载文件1..."
+        curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_1"
         download_status_1=$?
-        echo "正在下载 00-debian-heads 文件..."
-        curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_2"
+        echo "正在下载文件2..."
+        curl -s -o "/etc/update-motd.d/20-debian-sysinfo" "$file_url_2"
         download_status_2=$?
         if [ $download_status_1 -eq 0 ] && [ $download_status_2 -eq 0 ]; then
-            chmod 755 /etc/update-motd.d/{20-debian-sysinfo,00-debian-heads}
+            chmod 755 /etc/update-motd.d/{00-debian-heads,20-debian-sysinfo}
             echo "Debian 文件已成功下载并设置权限为 755。"
         else
             echo "文件下载失败! 错误信息：$download_status_2"
@@ -62,10 +66,10 @@ download_motd_script() {
         file_name="20-armbian-sysinfo2"
         file_dest="/etc/update-motd.d/$file_name"
         if [ -f "$file_dest" ]; then
-            echo "文件 $file_name 已存在，删除旧文件..."
+            echo "文件已存在，删除旧文件..."
             sudo rm -f "$file_dest"
         fi
-        echo "正在从 GitHub 下载 Armbian 文件..."
+        echo "正在从 GitHub 下载文件..."
         curl -s -o "$file_dest" "$file_url"
         download_status=$?
         if [ $download_status -eq 0 ]; then
@@ -80,7 +84,7 @@ download_motd_script() {
         exit 1
     fi
     if grep -q "bc" "$file_dest"; then
-        echo "检测到 MOTD 脚本使用了 bc，确保其已正确安装..."
+        echo "检测到脚本使用了 bc，确保其已正确安装..."
         check_bc_installed
     fi
 }
@@ -93,9 +97,9 @@ handle_profile_modification() {
     export MOTD_SHOWN=1
     run-parts /etc/update-motd.d
 fi"
-        echo "正在清空 /etc/motd 文件..."
+        echo "正在清空标志区文件..."
         sudo truncate -s 0 /etc/motd
-        echo "/etc/motd 文件已清空。"
+        echo "标志区文件已清空。"
     else
         check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
  run-parts /etc/update-motd.d
