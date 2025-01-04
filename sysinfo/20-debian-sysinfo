@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# 定义颜色常量
 RESET="\033[0m"
 PURPLE="\033[1;35m"
 BLUE="\033[1;34m"
@@ -10,28 +9,19 @@ RED="\033[1;31m"
 CYAN="\033[1;36m"
 MAGENTA="\033[1;35m"
 
-# 欢迎界面和系统基本信息
 echo -e "${PURPLE}欢迎来到 私人服务 系统！${RESET}"
 echo -e "${BLUE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
 echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
 echo -e "${BLUE}系统已运行：$(uptime -p)${RESET}"
 
-# Sing-box 状态检查和版本信息
 if command -v sing-box >/dev/null 2>&1; then
-    # 获取当前版本和最新版本
     CURRENT_VERSION=$(sing-box version 2>/dev/null | head -n 1 | cut -d ' ' -f 3 || echo "未知版本")
     LATEST_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
-    
-    # 格式化版本号
     CURRENT_VERSION="${CURRENT_VERSION#v}"
     LATEST_VERSION="${LATEST_VERSION#v}"
-    
-    # 显示版本信息
     echo -e "${YELLOW}Sing-box 版本信息：${RESET}"
-    echo -e "${BLUE}当前版本：${RESET}${CURRENT_VERSION}"
-    
+    echo -e "${BLUE}当前版本：${RESET}${CURRENT_VERSION} ${BLUE}最新版本：${RESET}${LATEST_VERSION}"
     if [[ -n "$LATEST_VERSION" ]]; then
-        echo -e "${BLUE}最新版本：${RESET}${LATEST_VERSION}"
         if [[ "$CURRENT_VERSION" == "$LATEST_VERSION" ]]; then
             echo -e "${GREEN}Sing-box 已是最新版本${RESET}"
         else
@@ -40,11 +30,8 @@ if command -v sing-box >/dev/null 2>&1; then
     else
         echo -e "${RED}无法获取 Sing-box 最新版本信息${RESET}"
     fi
-
-    # 检查服务状态
     if systemctl is-active sing-box >/dev/null 2>&1; then
         echo -e "${GREEN}Sing-box 服务正在运行${RESET}"
-        # 获取 Sing-box 内存占用
         SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
         if [[ -n "$SINGBOX_MEMORY" ]]; then
             echo -e "${BLUE}Sing-box 内存占用:${RESET} ${SINGBOX_MEMORY} MB"
@@ -58,7 +45,6 @@ else
     echo -e "${RED}Sing-box 未安装或不可用！${RESET}"
 fi
 
-# 检查 nftables-singbox 自启动状态
 if systemctl list-units --type=service --all | grep -q "nftables-singbox.service"; then
     if systemctl is-enabled nftables-singbox.service >/dev/null 2>&1; then
         echo -e "${CYAN}Nftables-singbox 自启动服务已启用${RESET}"
@@ -69,7 +55,6 @@ else
     echo -e "${RED}Nftables-singbox 自启动服务未安装！${RESET}"
 fi
 
-# 检查nftables防火墙状态
 if command -v nft >/dev/null 2>&1; then
     if systemctl is-active nftables >/dev/null 2>&1; then
         echo -e "${CYAN}Nftables 防火墙已启用${RESET}"
@@ -80,26 +65,46 @@ else
     echo -e "${RED}Nftables 防火墙未安装！${RESET}"
 fi
 
-# 确保 PATH 和 TERM 设置正确
+UPDATE_SCRIPT="/etc/sing-box/update-singbox.sh"
+if [ -f "$UPDATE_SCRIPT" ]; then
+    if crontab -l 2>/dev/null | grep -q "$UPDATE_SCRIPT"; then
+        echo -n -e "${GREEN}自动更新配置文件已设置${RESET}"
+        INTERVAL=$(crontab -l 2>/dev/null | grep "$UPDATE_SCRIPT" | grep -oE '\*/[0-9]+' | sed 's|\*/||')
+        if [ -n "$INTERVAL" ]; then
+            echo -n -e " ${CYAN}间隔：${RESET}${INTERVAL} 小时"
+        else
+            echo -n -e " ${RED}无法获取自动更新设定时间！${RESET}"
+            echo -n -e " ${CYAN}Crontab 条目：${RESET}"
+            crontab -l 2>/dev/null | grep "$UPDATE_SCRIPT"
+        fi
+    else
+        echo -n -e "${RED}自动更新配置文件未设置！${RESET}"
+    fi
+    LAST_UPDATE=$(stat -c %y "$UPDATE_SCRIPT" 2>/dev/null | cut -d'.' -f1)
+    if [ -n "$LAST_UPDATE" ]; then
+        echo -e " ${CYAN}上次更新时间：${RESET}${LAST_UPDATE}"
+    else
+        echo -e " ${RED}无法获取上次更新时间！${RESET}"
+    fi
+else
+    echo -e "${RED}自动更新配置文件不存在！${RESET}"
+fi
+
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export TERM=xterm
 
-# 显示 CPU 使用率
 CPU=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5); printf "%.2f", usage}')
 echo -e "${YELLOW}CPU 使用率：${RESET}${CPU}%, 空闲: $(echo "100 - $CPU" | bc)%"
 
-# 显示内存使用情况
 mem_total=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 mem_free=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
 mem_used=$((mem_total - mem_free))
 mem_usage=$(awk -v used=$mem_used -v total=$mem_total 'BEGIN {printf "%.2f", (used/total)*100}')
 echo -e "${YELLOW}当前内存使用情况：${RESET}$((mem_used / 1024))/$((mem_total / 1024)) MB (${mem_usage}%)"
 
-# 显示磁盘使用情况
 disk_usage=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')
 echo -e "${YELLOW}当前磁盘使用情况：${RESET}${disk_usage}"
 
-# 显示 DNS 信息
 if [[ -f /run/systemd/resolve/resolv.conf ]]; then
     DNS_SERVERS=$(grep '^nameserver' /run/systemd/resolve/resolv.conf | awk '{print $2}')
 else
@@ -114,51 +119,26 @@ if [[ -n "$DNS_SERVERS" ]]; then
     echo
 else
     echo -e "${RED}未找到 DNS 服务器信息！${RESET}"
-fi 
+fi
 
-# 显示默认网关信息
 DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
 echo -n -e "${YELLOW}默认网关:${RESET} "
-if [[ -n "$DEFAULT_GATEWAY" ]]; then
-    echo "$DEFAULT_GATEWAY"
-else
-    echo -e "${RED}未找到默认网关信息！${RESET}"
-fi
+[[ -n "$DEFAULT_GATEWAY" ]] && echo "$DEFAULT_GATEWAY" || echo -e "${RED}未找到默认网关信息！${RESET}"
 
-# 显示网关接口信息
 GATEWAY_INTERFACE=$(ip route | awk '/default/ {print $5}')
 echo -n -e "${YELLOW}网关接口:${RESET} "
-if [[ -n "$GATEWAY_INTERFACE" ]]; then
-    echo "$GATEWAY_INTERFACE"
-else
-    echo -e "${RED}未找到网关接口信息！${RESET}"
-fi
+[[ -n "$GATEWAY_INTERFACE" ]] && echo "$GATEWAY_INTERFACE" || echo -e "${RED}未找到网关接口信息！${RESET}"
 
-# 获取网络接口、MAC 地址和 IP 地址信息
 echo -e "${BLUE}网络接口信息：${RESET}"
 for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
-    # 跳过回环接口和虚拟接口（如 docker0、br0）
-    if [[ "$interface" == "lo" || "$interface" == "docker0" || "$interface" == "br0" ]]; then
-        continue
-    fi
-    # 获取 MAC 地址
+    [[ "$interface" =~ ^(lo|docker0|br0)$ ]] && continue
     MAC_ADDRESS=$(cat /sys/class/net/"$interface"/address 2>/dev/null)
-    # 获取 IP 地址
     IP_ADDRESS=$(ip -o -4 addr show "$interface" | awk '{print $4}' | cut -d'/' -f1)
-    # 判断是否为 DHCP 或静态 IP
-    IS_DHCP="静态 IP"
-    # 检查网络接口配置文件（/etc/network/interfaces）中的配置
-    if grep -qE "iface\s+$interface\s+inet\s+dhcp" /etc/network/interfaces 2>/dev/null; then
-        IS_DHCP="DHCP 分配"
-    elif grep -qE "iface\s+$interface\s+inet\s+static" /etc/network/interfaces 2>/dev/null; then
-        IS_DHCP="静态 IP"
-    fi
-    # 输出结果
+    IS_DHCP=$(grep -qE "iface\s+$interface\s+inet\s+dhcp" /etc/network/interfaces 2>/dev/null && echo "DHCP 分配" || echo "静态 IP")
     echo -e "${YELLOW}接口:${RESET} $interface"
     echo -e "  ${BLUE}MAC 地址:${RESET} $MAC_ADDRESS"
     echo -e "  ${BLUE}IP 地址:${RESET} ${IP_ADDRESS:-未分配}"
     echo -e "  ${BLUE}IP 类型:${RESET} $IS_DHCP"
 done
 
-# 退出脚本，确保没有交互式 shell
 exit
