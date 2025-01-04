@@ -1,5 +1,5 @@
 #!/bin/bash
-#v 1.1.3
+#v 1.1.4
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
         echo "bc 命令未安装，正在尝试安装..."
