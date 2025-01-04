@@ -124,7 +124,7 @@ fi"
 main() {
     check_bc_installed
     download_motd_script
-    echo "请选择使用的工具类型："
+    echo "请选择使用的工具类型(必看wiki)："
     echo "1. FinalShell/MobaXterm"
     echo "2. 其他工具(ServerBox等)"
     read -r -p "请输入选项 (1 或 2): " tool_choice
