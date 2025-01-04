@@ -68,26 +68,26 @@ fi
 UPDATE_SCRIPT="/etc/sing-box/update-singbox.sh"
 if [ -f "$UPDATE_SCRIPT" ]; then
     if crontab -l 2>/dev/null | grep -q "$UPDATE_SCRIPT"; then
-        echo -n -e "${GREEN}自动更新配置文件已设置。${RESET}"
+        echo -n -e "${GREEN}自动更新配置文件已设置${RESET}"
         INTERVAL=$(crontab -l 2>/dev/null | grep "$UPDATE_SCRIPT" | grep -oE '\*/[0-9]+' | sed 's|\*/||')
         if [ -n "$INTERVAL" ]; then
             echo -n -e " ${CYAN}间隔：${RESET}${INTERVAL} 小时"
         else
-            echo -n -e " ${RED}无法获取自动更新设定时间。${RESET}"
+            echo -n -e " ${RED}无法获取自动更新设定时间！${RESET}"
             echo -n -e " ${CYAN}Crontab 条目：${RESET}"
             crontab -l 2>/dev/null | grep "$UPDATE_SCRIPT"
         fi
     else
-        echo -n -e "${RED}自动更新配置文件未设置。${RESET}"
+        echo -n -e "${RED}自动更新配置文件未设置！${RESET}"
     fi
     LAST_UPDATE=$(stat -c %y "$UPDATE_SCRIPT" 2>/dev/null | cut -d'.' -f1)
     if [ -n "$LAST_UPDATE" ]; then
         echo -e " ${CYAN}上次更新时间：${RESET}${LAST_UPDATE}"
     else
-        echo -e " ${RED}无法获取上次更新时间。${RESET}"
+        echo -e " ${RED}无法获取上次更新时间！${RESET}"
     fi
 else
-    echo -e "${RED}自动更新配置文件不存在。${RESET}"
+    echo -e "${RED}自动更新配置文件不存在！${RESET}"
 fi
 
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
