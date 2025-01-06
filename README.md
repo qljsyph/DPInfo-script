@@ -6,7 +6,7 @@
 重新执行一键脚本下载对应系统文件
 ## 一键脚本：
 ```
-bash <(curl -sL https://ghproxy.cc//https:/raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-sysinfo.sh)
+bash <(curl -sL https://ghproxy.cc/https:/raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/auto-sysinfo.sh)
 ```
 # 系统信息显示内容
 - **当前时间**
