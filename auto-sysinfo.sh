@@ -46,8 +46,8 @@ download_motd_script() {
                 sudo rm -f "$file_dest"
             fi
         done
-        file_url_1="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
-        file_url_2="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
+        file_url_1="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
+        file_url_2="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
         echo "正在下载文件1..."
         curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_1"
         download_status_1=$?
@@ -62,7 +62,7 @@ download_motd_script() {
             exit 1
         fi
     elif [ "$os_type" == "armbian" ]; then
-        file_url="https://ghgo.xyz/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
+        file_url="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
         file_name="20-armbian-sysinfo2"
         file_dest="/etc/update-motd.d/$file_name"
         if [ -f "$file_dest" ]; then
