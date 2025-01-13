@@ -11,16 +11,27 @@ RESET="\033[0m"
 echo -e "${CYAN}欢迎来到私人服务系统！${RESET}"
 echo -e "${PURPLE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
 echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
-echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本v1.1.4 ${RESET}"
+echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本v1.1.6 ${RESET}"
 
 check_singbox() {
 if command -v sing-box >/dev/null 2>&1; then
     CURRENT_VERSION=$(sing-box version 2>/dev/null | head -n 1 | cut -d ' ' -f 3 || echo "未知版本")
-    LATEST_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
+    CURRENT_VERSION_TYPE=$(echo "$CURRENT_VERSION" | grep -oE '(alpha|beta|rc)' || echo "stable")
     CURRENT_VERSION="${CURRENT_VERSION#v}"
+
+    ALL_VERSIONS=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases | grep -Po '"tag_name": "\K.*?(?=")')
+
+    if [[ "$CURRENT_VERSION_TYPE" == "stable" ]]; then
+        LATEST_VERSION=$(echo "$ALL_VERSIONS" | grep -vE '(alpha|beta|rc)' | head -n 1)
+    else
+        LATEST_VERSION=$(echo "$ALL_VERSIONS" | grep -E "$CURRENT_VERSION_TYPE" | head -n 1)
+    fi
+
     LATEST_VERSION="${LATEST_VERSION#v}"
+
     echo -e "${YELLOW}Sing-box 版本信息：${RESET}"
     echo -e "${BLUE}当前版本：${RESET}${CURRENT_VERSION} ${BLUE}最新版本：${RESET}${LATEST_VERSION}"
+
     if [[ -n "$LATEST_VERSION" ]]; then
         if [[ "$CURRENT_VERSION" == "$LATEST_VERSION" ]]; then
             echo -e "${GREEN}Sing-box 已是最新版本${RESET}"
@@ -30,15 +41,8 @@ if command -v sing-box >/dev/null 2>&1; then
     else
         echo -e "${RED}无法获取 Sing-box 最新版本信息${RESET}"
     fi
-    if systemctl is-active sing-box >/dev/null 2>&1; then
-        echo -e "${GREEN}Sing-box 服务正在运行${RESET}"
-        SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
-        [[ -n "$SINGBOX_MEMORY" ]] && echo -e "${BLUE}Sing-box 内存占用:${RESET} ${SINGBOX_MEMORY} MB" || echo -e "${RED}无法获取 Sing-box 内存占用！${RESET}"
-    else
-        echo -e "${RED}Sing-box 服务未运行${RESET}"
-    fi
 else
-    echo -e "${RED}Sing-box 未安装或不可用！${RESET}"
+    echo -e "${RED}未检测到 Sing-box 安装${RESET}"
 fi
 }
 
