@@ -1,5 +1,33 @@
 #!/bin/bash
 #v 1.1.4
+
+remove_motd() {
+    echo "正在执行删除操作..."
+    
+    # 删除profile中的相关代码块
+    if [ -f "/etc/profile" ]; then
+        # 创建临时文件
+        temp_file=$(mktemp)
+        # 读取文件直到找到最后一个包含 update-motd.d 的 if 语句块
+        awk '/^if.*update-motd.d/{p=NR}!/^if.*update-motd.d/{if(p&&NR<=p+10){if($0~/^fi$/){p=0}}}!(p&&NR>p-1)' /etc/profile > "$temp_file"
+        # 替换原文件
+        sudo cp "$temp_file" /etc/profile
+        rm "$temp_file"
+        echo "已清除 /etc/profile 中的相关代码块"
+    fi
+    
+    # 删除motd相关文件
+    for file in "00-debian-heads" "20-debian-sysinfo" "20-armbian-sysinfo2"; do
+        if [ -f "/etc/update-motd.d/$file" ]; then
+            sudo rm -f "/etc/update-motd.d/$file"
+            echo "已删除 /etc/update-motd.d/$file"
+        fi
+    done
+    
+    echo "删除操作完成"
+    exit 0
+}
+
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
         echo "bc 命令未安装，正在尝试安装..."
@@ -122,17 +150,34 @@ fi"
 }
 
 main() {
-    check_bc_installed
-    download_motd_script
-    echo "请选择使用的工具类型(必看wiki)："
-    echo "1. FinalShell/MobaXterm"
-    echo "2. 其他工具(ServerBox等)"
-    read -r -p "请输入选项 (1 或 2): " tool_choice
-    if [[ ! "$tool_choice" =~ ^[12]$ ]]; then
-        echo "无效的选项，请输入 1 或 2"
-        exit 1
-    fi
-    handle_profile_modification "$tool_choice"
+    echo "请选择操作："
+    echo "1. 安装"
+    echo "2. 删除"
+    read -r -p "请输入选项 (1 或 2): " operation_choice
+    
+    case $operation_choice in
+        1)
+            echo "开始安装..."
+            check_bc_installed
+            download_motd_script
+            echo "请选择使用的工具类型(必看wiki)："
+            echo "1. FinalShell/MobaXterm"
+            echo "2. 其他工具(ServerBox等)"
+            read -r -p "请输入选项 (1 或 2): " tool_choice
+            if [[ ! "$tool_choice" =~ ^[12]$ ]]; then
+                echo "无效的选项，请输入 1 或 2"
+                exit 1
+            fi
+            handle_profile_modification "$tool_choice"
+            ;;
+        2)
+            remove_motd
+            ;;
+        *)
+            echo "无效的选项，请输入 1 或 2"
+            exit 1
+            ;;
+    esac
 }
 
 main
