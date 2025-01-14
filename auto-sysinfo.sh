@@ -173,7 +173,7 @@ main() {
 
             local system_version="2"  # 默认为普通版
             if [ "$os_type" == "debian" ]; then
-                read -r -p "选择系统版本（输入 1: sing-box 版 2: 普通版）: " system_version
+                read -r -p "选择信息内容（输入 1: sing-box 版 2: 基础版）: " system_version
                 if [[ ! "$system_version" =~ ^[12]$ ]]; then
                     echo "无效的版本选择，请输入 1 或 2"
                     exit 1
