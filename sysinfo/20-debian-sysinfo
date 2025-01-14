@@ -43,7 +43,8 @@ if command -v sing-box >/dev/null 2>&1; then
 else
     echo -e "${RED}未检测到 Sing-box 安装${RESET}"
 fi
-    if systemctl is-active sing-box >/dev/null 2>&1; then
+
+if systemctl is-active sing-box >/dev/null 2>&1; then
         echo -e "${GREEN}Sing-box 服务正在运行${RESET}"
         SINGBOX_MEMORY=$(ps -o rss= -C sing-box | awk '{total += $1} END {printf "%.2f", total/1024}')
         if [[ -n "$SINGBOX_MEMORY" ]]; then
