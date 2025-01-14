@@ -11,4 +11,4 @@ echo -e "${CYAN} ██║  ██║█████╗  ██████╔�
 echo -e "${CYAN} ██║  ██║██╔══╝  ██╔══██╗██║██╔══██║██║╚██╗██║ ${NC}"
 echo -e "${CYAN} ██████╔╝███████╗██████╔╝██║██║  ██║██║ ╚████║ ${NC}"
 echo -e "${CYAN} ═════╝ ╚══════╝╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝  ${NC}"
-echo -e "${CYAN} originate from https://github.com/qljsyph/bash-script  版本v1.1.9${RESET}"
+echo -e "${CYAN} originate from https://github.com/qljsyph/bash-script  版本v1.2.0${RESET}"

@@ -11,7 +11,7 @@ RESET="\033[0m"
 echo -e "${CYAN}欢迎来到私人服务系统！${RESET}"
 echo -e "${PURPLE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
 echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
-echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本v1.1.9 ${RESET}"
+echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本v1.2.0 ${RESET}"
 
 check_singbox() {
 if command -v sing-box >/dev/null 2>&1; then
