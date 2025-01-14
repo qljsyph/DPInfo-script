@@ -1,40 +1,18 @@
 #!/bin/bash
-#v 1.1.4
+#v 1.1.8
 
 remove_motd() {
     echo "正在执行删除操作..."
     
-    # 定义要查找和删除的代码块
-    local code_block1='if [ -n "$SSH_CONNECTION" ] && [ -z "$MOTD_SHOWN" ]; then
-    export MOTD_SHOWN=1
-    run-parts /etc/update-motd.d
-fi'
+    # 删除第一种代码块
+    sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \] && \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d' /etc/profile
     
-    local code_block2='if [ -n "$SSH_CONNECTION" ]; then
-    run-parts /etc/update-motd.d
-fi'
-    
-    # 创建临时文件
-    temp_file=$(mktemp)
-    
-    # 读取原文件内容
-    cat "/etc/profile" > "$temp_file"
-    
-    # 删除代码块
-    for block in "$code_block1" "$code_block2"; do
-        if grep -F "$block" "$temp_file" > /dev/null; then
-            # 使用 sed 删除完整的代码块
-            sed -i "$(echo "$block" | sed -e 's/[]\/$*.^[]/\\&/g')" "$temp_file"
-        fi
-    done
-    
-    # 替换原文件
-    sudo cp "$temp_file" /etc/profile
-    rm "$temp_file"
+    # 删除第二种代码块
+    sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/d' /etc/profile
     
     # 删除motd相关文件
     for file in "00-debian-heads" "20-debian-sysinfo" "20-armbian-sysinfo2"; do
-        [ -f "/etc/update-motd.d/$file" ] && sudo rm -f "/etc/update-motd.d/$file"
+        [ -f "/etc/update-motd.d/$file" ] && sudo rm -f "/etc/update-motd.d/$file" 2>/dev/null
     done
     
     echo "删除完成"
