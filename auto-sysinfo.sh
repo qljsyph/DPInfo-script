@@ -130,7 +130,10 @@ fi"
         echo "标志区文件已清空。"
     else
         check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
-    run-parts /etc/update-motd.d
+    if [ -z \"\$MOTD_SHOWN\" ]; then
+        export MOTD_SHOWN=1
+        run-parts /etc/update-motd.d
+    fi
 fi"
     fi
     if ! check_code_exists "$check_code"; then
