@@ -1,5 +1,5 @@
 #!/bin/bash
-# v 1.2.2
+# v 1.2.3
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -119,24 +119,37 @@ download_motd_script() {
 }
 
 handle_profile_modification() {
-    local tool_choice=$1
+    local debian_choice=$1
+    local tool_choice=$2
     local check_code=""
-    if [ "$tool_choice" == "1" ]; then
-        check_code="if [ -n \"\$SSH_CONNECTION\" ] && [ -z \"\$MOTD_SHOWN\" ]; then
+
+    if [ "$debian_choice" == "1" ]; then  # singbox版
+        if [ "$tool_choice" == "1" ]; then  # FinalShell/MobaXterm
+            check_code="if [ -n \"\$SSH_CONNECTION\" ] && [ -z \"\$MOTD_SHOWN\" ]; then
     export MOTD_SHOWN=1
     run-parts /etc/update-motd.d
 fi"
-        echo "正在清空标志区文件..."
-        sudo truncate -s 0 /etc/motd
-        echo "标志区文件已清空。"
-    else
-        check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
+        else  # 其他工具(ServerBox 等)
+            check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
+    run-parts /etc/update-motd.d
+fi"
+        fi
+    else  # 普通版
+        if [ "$tool_choice" == "1" ]; then  # FinalShell/MobaXterm
+            check_code="if [ -n \"\$SSH_CONNECTION\" ] && [ -z \"\$MOTD_SHOWN\" ]; then
+    export MOTD_SHOWN=1
+    run-parts /etc/update-motd.d
+fi"
+        else  # 其他工具(ServerBox 等)
+            check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
     if [ -z \"\$MOTD_SHOWN\" ]; then
         export MOTD_SHOWN=1
         run-parts /etc/update-motd.d
     fi
 fi"
+        fi
     fi
+
     if ! check_code_exists "$check_code"; then
         echo "未找到完全匹配的代码块，准备添加..."
         existing_count=$(grep -c "run-parts /etc/update-motd.d" /etc/profile)
@@ -172,7 +185,13 @@ main() {
                 echo "无效的选项，请输入 1 或 2"
                 exit 1
             fi
-            handle_profile_modification "$tool_choice"
+            echo "请选择 Debian 版本（输入 1: sing-box 版 2: 普通版）: "
+            read -r -p "请输入选项（1 或 2）: " debian_choice
+            if [[ ! "$debian_choice" =~ ^[12]$ ]]; then
+                echo "无效的选项，请输入 1 或 2"
+                exit 1
+            fi
+            handle_profile_modification "$debian_choice" "$tool_choice"
             ;;
         2)
             remove_motd
