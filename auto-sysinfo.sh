@@ -4,28 +4,40 @@
 remove_motd() {
     echo "正在执行删除操作..."
     
-    # 删除profile中的相关代码块
-    if [ -f "/etc/profile" ]; then
-        # 创建临时文件
-        temp_file=$(mktemp)
-        # 读取文件直到找到最后一个包含 update-motd.d 的 if 语句块
-        awk '/^if.*update-motd.d/{p=NR}!/^if.*update-motd.d/{if(p&&NR<=p+10){if($0~/^fi$/){p=0}}}!(p&&NR>p-1)' /etc/profile > "$temp_file"
-        # 替换原文件
-        sudo cp "$temp_file" /etc/profile
-        rm "$temp_file"
-        echo "已清除 /etc/profile 中的相关代码块"
-    fi
+    # 定义要查找和删除的代码块
+    local code_block1='if [ -n "$SSH_CONNECTION" ] && [ -z "$MOTD_SHOWN" ]; then
+    export MOTD_SHOWN=1
+    run-parts /etc/update-motd.d
+fi'
     
-    # 删除motd相关文件
-    for file in "00-debian-heads" "20-debian-sysinfo" "20-armbian-sysinfo2"; do
-        if [ -f "/etc/update-motd.d/$file" ]; then
-            sudo rm -f "/etc/update-motd.d/$file"
-            echo "已删除 /etc/update-motd.d/$file"
+    local code_block2='if [ -n "$SSH_CONNECTION" ]; then
+    run-parts /etc/update-motd.d
+fi'
+    
+    # 创建临时文件
+    temp_file=$(mktemp)
+    
+    # 读取原文件内容
+    cat "/etc/profile" > "$temp_file"
+    
+    # 删除代码块
+    for block in "$code_block1" "$code_block2"; do
+        if grep -F "$block" "$temp_file" > /dev/null; then
+            # 使用 sed 删除完整的代码块
+            sed -i "$(echo "$block" | sed -e 's/[]\/$*.^[]/\\&/g')" "$temp_file"
         fi
     done
     
-    echo "删除操作完成"
-    exit 0
+    # 替换原文件
+    sudo cp "$temp_file" /etc/profile
+    rm "$temp_file"
+    
+    # 删除motd相关文件
+    for file in "00-debian-heads" "20-debian-sysinfo" "20-armbian-sysinfo2"; do
+        [ -f "/etc/update-motd.d/$file" ] && sudo rm -f "/etc/update-motd.d/$file"
+    done
+    
+    echo "删除完成"
 }
 
 check_bc_installed() {
@@ -130,7 +142,7 @@ fi"
         echo "标志区文件已清空。"
     else
         check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
- run-parts /etc/update-motd.d
+    run-parts /etc/update-motd.d
 fi"
     fi
     if ! check_code_exists "$check_code"; then
