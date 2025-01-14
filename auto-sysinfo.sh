@@ -1,5 +1,5 @@
 #!/bin/bash
-# v 1.2.0
+# v 1.2.2
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -34,7 +34,8 @@ check_code_exists() {
 
 remove_motd() {
     echo "正在执行删除操作..."
-    
+
+    sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/ { /^if \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d; /^fi$/d; }' /etc/profile
     sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \] && \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d' /etc/profile
     sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/d' /etc/profile
     
