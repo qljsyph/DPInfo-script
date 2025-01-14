@@ -4,13 +4,10 @@
 remove_motd() {
     echo "正在执行删除操作..."
     
-    # 删除第一种代码块
     sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \] && \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d' /etc/profile
     
-    # 删除第二种代码块
     sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/d' /etc/profile
     
-    # 删除motd相关文件
     for file in "00-debian-heads" "20-debian-sysinfo" "20-armbian-sysinfo2"; do
         [ -f "/etc/update-motd.d/$file" ] && sudo rm -f "/etc/update-motd.d/$file" 2>/dev/null
     done
