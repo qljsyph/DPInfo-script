@@ -1,19 +1,5 @@
 #!/bin/bash
-#v 1.1.8
-
-remove_motd() {
-    echo "正在执行删除操作..."
-    
-    sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \] && \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d' /etc/profile
-    
-    sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/d' /etc/profile
-    
-    for file in "00-debian-heads" "20-debian-sysinfo" "20-armbian-sysinfo2"; do
-        [ -f "/etc/update-motd.d/$file" ] && sudo rm -f "/etc/update-motd.d/$file" 2>/dev/null
-    done
-    
-    echo "删除完成"
-}
+# v 1.1.9
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -44,6 +30,19 @@ check_code_exists() {
     else
         return 1
     fi
+}
+
+remove_motd() {
+    echo "正在执行删除操作..."
+    
+    sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \] && \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d' /etc/profile
+    sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/d' /etc/profile
+    
+    for file in "00-debian-heads" "20-debian-sysinfo" "20-armbian-sysinfo2"; do
+        [ -f "/etc/update-motd.d/$file" ] && sudo rm -f "/etc/update-motd.d/$file" 2>/dev/null
+    done
+    
+    echo "删除完成"
 }
 
 download_motd_script() {
@@ -168,5 +167,3 @@ main() {
 }
 
 main
-
-exit
