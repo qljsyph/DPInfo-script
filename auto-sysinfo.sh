@@ -125,7 +125,7 @@ fi"
     run-parts /etc/update-motd.d
 fi"
         fi
-    else  # armbian或debian普通版本
+    else  # armbian或debian基础版本
         if [ "$tool_choice" == "1" ]; then  # FinalShell/MobaXterm
             check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
     if [ -z \"\$MOTD_SHOWN\" ]; then
@@ -177,7 +177,7 @@ main() {
                 exit 1
             fi
 
-            local system_version="2"  # 默认为普通版
+            local system_version="2"  # 默认为基础版
             if [ "$os_type" == "debian" ]; then
                 read -r -p "选择信息内容（输入 1: sing-box 版 2: 基础版）: " system_version
                 if [[ ! "$system_version" =~ ^[12]$ ]]; then
