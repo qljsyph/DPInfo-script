@@ -51,12 +51,12 @@ handle_installation() {
     if [ "$os_type" == "debian" ]; then
         case $system_version in
             1)
-                file_url_1="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
-                file_url_2="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo"
+                file_url_1="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/00-debian-heads"
+                file_url_2="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-debian-sysinfo"
                 ;;
             2)
-                file_url_1="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/00-debian-heads"
-                file_url_2="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-debian-sysinfo2"
+                file_url_1="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/00-debian-heads"
+                file_url_2="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-debian-sysinfo2"
                 ;;
         esac
         for file_name in "00-debian-heads" "20-debian-sysinfo"; do
@@ -84,7 +84,7 @@ handle_installation() {
             exit 1
         fi
     elif [ "$os_type" == "armbian" ]; then
-        file_url="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/bash-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
+        file_url="https://ghproxy.cc/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
         file_name="20-armbian-sysinfo2"
         file_dest="/etc/update-motd.d/$file_name"
         if [ -f "$file_dest" ]; then
