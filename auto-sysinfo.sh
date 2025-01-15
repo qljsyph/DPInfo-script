@@ -1,5 +1,5 @@
 #!/bin/bash
-# v 1.2.4
+# v 1.2.5
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -117,6 +117,9 @@ handle_installation() {
     export MOTD_SHOWN=1
     run-parts /etc/update-motd.d
 fi"
+            echo "正在清空标志区文件..."
+            sudo truncate -s 0 /etc/motd
+            echo "标志区文件已清空。"
         else  # 其他工具
             check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
     run-parts /etc/update-motd.d
@@ -130,6 +133,9 @@ fi"
         run-parts /etc/update-motd.d
     fi
 fi"
+            echo "正在清空标志区文件..."
+            sudo truncate -s 0 /etc/motd
+            echo "标志区文件已清空。"
         else  # 其他工具
             check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
     run-parts /etc/update-motd.d
