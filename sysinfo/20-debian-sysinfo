@@ -18,12 +18,17 @@ if command -v sing-box >/dev/null 2>&1; then
     CURRENT_VERSION_TYPE=$(echo "$CURRENT_VERSION" | grep -oE '(alpha|beta|rc)' || echo "stable")
     CURRENT_VERSION="${CURRENT_VERSION#v}"
 
-    ALL_VERSIONS=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases | grep -Po '"tag_name": "\K.*?(?=")')
+    ALL_VERSIONS=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases | grep -oE '"tag_name":\s*"v[^"]+' | cut -d '"' -f 4)
+
+    if [[ -z "$ALL_VERSIONS" ]]; then
+        echo -e "${RED}无法获取 Sing-box 最新版本信息${RESET}"
+        exit 1
+    fi
 
     if [[ "$CURRENT_VERSION_TYPE" == "stable" ]]; then
         LATEST_VERSION=$(echo "$ALL_VERSIONS" | grep -vE '(alpha|beta|rc)' | head -n 1)
     else
-        LATEST_VERSION=$(echo "$ALL_VERSIONS" | grep -E "$CURRENT_VERSION_TYPE" | head -n 1)
+        LATEST_VERSION=$(echo "$ALL_VERSIONS" | grep -E "(alpha|beta|$CURRENT_VERSION_TYPE)" | head -n 1)
     fi
 
     LATEST_VERSION="${LATEST_VERSION#v}"
