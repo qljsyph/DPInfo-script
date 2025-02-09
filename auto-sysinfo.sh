@@ -84,8 +84,21 @@ handle_installation() {
             exit 1
         fi
     elif [ "$os_type" == "armbian" ]; then
-        file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
-        file_name="20-armbian-sysinfo2"
+        echo "请选择版本："
+        echo "1. mihomo"
+        echo "2. sing box"
+        read -r -p "请输入选项（1 或 2）: " armbian_choice
+        if [[ ! "$armbian_choice" =~ ^[12]$ ]]; then
+            echo "无效的选项，请输入 1 或 2"
+            exit 1
+        fi
+        if [ "$armbian_choice" == "1" ]; then
+            file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo3"
+            file_name="20-armbian-sysinfo3"
+        else
+            file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
+            file_name="20-armbian-sysinfo2"
+        fi
         file_dest="/etc/update-motd.d/$file_name"
         if [ -f "$file_dest" ]; then
             echo "文件已存在，删除旧文件..."
