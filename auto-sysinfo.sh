@@ -37,7 +37,7 @@ remove_motd() {
     sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/ { /^if \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d; /^fi$/d; }' /etc/profile
     sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \] && \[ -z "\$MOTD_SHOWN" \]; then/,/^fi$/d' /etc/profile
     sudo sed -i '/^if \[ -n "\$SSH_CONNECTION" \]; then/,/^fi$/d' /etc/profile
-    for file in "00-debian-heads" "20-debian-sysinfo" "20-debian-sysinfo2" "20-armbian-sysinfo2"; do
+    for file in "00-debian-heads" "20-debian-sysinfo" "20-debian-sysinfo2" "20-armbian-sysinfo2" "20-armbian-sysinfo3"; do
         [ -f "/etc/update-motd.d/$file" ] && sudo rm -f "/etc/update-motd.d/$file" 2>/dev/null
     done
     echo "删除完成"
@@ -93,7 +93,7 @@ handle_installation() {
             exit 1
         fi
         if [ "$armbian_choice" == "1" ]; then
-            file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo3"
+            file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/mihomo/sysinfo/20-armbian-sysinfo3"
             file_name="20-armbian-sysinfo3"
         else
             file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
