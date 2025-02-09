@@ -14,7 +14,6 @@ echo -e "${BLUE}系统已运行：$(uptime -p)${RESET}"
 
 check_mihomo_service() {
     echo -e "\n${CYAN}检查 mihomo 服务状态：${RESET}"
-    # shellcheck disable=SC2317
     if systemctl is-active --quiet mihomo; then
         echo -e "${GREEN}mihomo 服务正在运行${RESET}"
     else
@@ -22,6 +21,7 @@ check_mihomo_service() {
     fi
 }
 
+check_mihomo_service
 
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export TERM=xterm
@@ -73,7 +73,5 @@ for interface in $(ip -o -4 addr show | awk '{print $2}' | sort | uniq); do
     echo -e "  ${BLUE}IP 地址:${RESET} ${IP_ADDRESS:-未分配}"
     echo -e "  ${BLUE}IP 类型:${RESET} $IS_DHCP"
 done
-
-check_mihomo_service
 
 exit
