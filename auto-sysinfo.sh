@@ -93,7 +93,7 @@ handle_installation() {
             exit 1
         fi
         if [ "$armbian_choice" == "1" ]; then
-            file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/mihomo/sysinfo/20-armbian-sysinfo3"
+            file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo3"
             file_name="20-armbian-sysinfo3"
         else
             file_url="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-armbian-sysinfo2"
