@@ -1,5 +1,5 @@
 #!/bin/bash
-# v 1.2.6
+# v 1.2.5
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -67,10 +67,25 @@ handle_installation() {
                 exit 1
                 ;;
         esac
-        for file_name in "00-debian-heads" "20-debian-sysinfo"; do
+
+        # 动态生成要下载的文件名
+        local file_name_1="00-debian-heads"
+        case $system_version in
+            1)
+                local file_name_2="20-debian-sysinfo"
+                ;;
+            2)
+                local file_name_2="20-debian-sysinfo2"
+                ;;
+            3)
+                local file_name_2="20-debian-sysinfo3"
+                ;;
+        esac
+
+        for file_name in "$file_name_1" "$file_name_2"; do
             file_dest="/etc/update-motd.d/$file_name"
             if [ -f "$file_dest" ]; then
-                if [ "$file_name" == "00-debian-heads" ]; then
+                if [ "$file_name" == "$file_name_1" ]; then
                     echo "文件 1 已存在，删除旧文件..."
                 else
                     echo "文件 2 已存在，删除旧文件..."
@@ -78,14 +93,16 @@ handle_installation() {
                 sudo rm -f "$file_dest"
             fi
         done
+
         echo "正在下载文件 1..."
-        sudo curl -s -o "/etc/update-motd.d/00-debian-heads" "$file_url_1"
+        sudo curl -s -o "/etc/update-motd.d/$file_name_1" "$file_url_1"
         download_status_1=$?
         echo "正在下载文件 2..."
-        sudo curl -s -o "/etc/update-motd.d/20-debian-sysinfo" "$file_url_2"
+        sudo curl -s -o "/etc/update-motd.d/$file_name_2" "$file_url_2"
         download_status_2=$?
+
         if [ $download_status_1 -eq 0 ] && [ $download_status_2 -eq 0 ]; then
-            sudo chmod 755 /etc/update-motd.d/{00-debian-heads,20-debian-sysinfo}
+            sudo chmod 755 "/etc/update-motd.d/$file_name_1" "/etc/update-motd.d/$file_name_2"
             echo "Debian 文件已成功下载并设置权限为 755。"
         else
             echo "文件下载失败! 错误信息：$download_status_2"
@@ -127,7 +144,7 @@ handle_installation() {
     # 检查是否需要 bc
     local check_file
     if [ "$os_type" == "debian" ]; then
-        check_file="/etc/update-motd.d/20-debian-sysinfo"
+        check_file="/etc/update-motd.d/$file_name_2"
     else
         check_file="$file_dest"
     fi
