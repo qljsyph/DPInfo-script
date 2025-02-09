@@ -13,11 +13,11 @@ echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
 echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本v1.2.5beta ${RESET}"
 
 check_mihomo_service() {
-    echo -e "\n${CYAN}检查 mihomo 服务状态：${RESET}"
+    echo -e "\n${CYAN}检查虚空终端服务状态：${RESET}"
     if systemctl is-active --quiet mihomo; then
-        echo -e "${GREEN}mihomo 服务正在运行${RESET}"
+        echo -e "${GREEN}服务正在运行${RESET}"
     else
-        echo -e "${RED}mihomo 服务未运行${RESET}"
+        echo -e "${RED}服务未运行${RESET}"
     fi
 }
 
