@@ -1,5 +1,5 @@
 #!/bin/bash
-# v 1.2.6
+# v 1.2.5
 
 check_bc_installed() {
     if ! command -v bc &> /dev/null; then
@@ -57,14 +57,6 @@ handle_installation() {
             2)
                 file_url_1="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/00-debian-heads"
                 file_url_2="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-debian-sysinfo2"
-                ;;
-            3)
-                file_url_1="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/00-debian-heads"
-                file_url_2="https://ghfast.top/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/sysinfo/20-debian-sysinfo3"
-                ;;
-            *)
-                echo "无效的版本选择，请输入 1、2 或 3"
-                exit 1
                 ;;
         esac
         for file_name in "00-debian-heads" "20-debian-sysinfo"; do
@@ -125,13 +117,7 @@ handle_installation() {
     fi
 
     # 检查是否需要 bc
-    local check_file
-    if [ "$os_type" == "debian" ]; then
-        check_file="/etc/update-motd.d/20-debian-sysinfo"
-    else
-        check_file="$file_dest"
-    fi
-    if grep -q "bc" "$check_file"; then
+    if grep -q "bc" "$file_dest"; then
         echo "检测到脚本使用了 bc，确保其已正确安装..."
         check_bc_installed
     fi
@@ -152,7 +138,7 @@ fi"
     run-parts /etc/update-motd.d
 fi"
         fi
-    else  # armbian或debian基础版、mihomo版
+    else  # armbian或debian基础版本
         if [ "$tool_choice" == "1" ]; then  # FinalShell/MobaXterm
             check_code="if [ -n \"\$SSH_CONNECTION\" ]; then
     if [ -z \"\$MOTD_SHOWN\" ]; then
@@ -195,7 +181,7 @@ main() {
         1)
             echo "开始安装..."
             check_bc_installed
-
+            
             # 选择系统类型和版本
             read -r -p "请选择操作系统类型（输入 debian/armbian/回车退出）: " os_type
             os_type=${os_type,,}
@@ -206,9 +192,9 @@ main() {
 
             local system_version="2"  # 默认为基础版
             if [ "$os_type" == "debian" ]; then
-                read -r -p "选择信息内容（输入 1: sing-box 版 2: 基础版 3: mihomo 版）: " system_version
-                if [[ ! "$system_version" =~ ^[123]$ ]]; then
-                    echo "无效的版本选择，请输入 1、2 或 3"
+                read -r -p "选择信息内容（输入 1: sing-box 版 2: 基础版）: " system_version
+                if [[ ! "$system_version" =~ ^[12]$ ]]; then
+                    echo "无效的版本选择，请输入 1 或 2"
                     exit 1
                 fi
             fi
