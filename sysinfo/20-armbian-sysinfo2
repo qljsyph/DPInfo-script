@@ -8,12 +8,14 @@ PURPLE="\033[1;35m"
 CYAN="\033[1;36m"
 RESET="\033[0m"
 
-echo -e "${CYAN}欢迎来到私人服务系统！${RESET}"
-echo -e "${PURPLE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
-echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
-echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本v1.2.5beta ${RESET}"
+print_header() {
+    echo -e "${CYAN}欢迎来到私人服务系统！${RESET}"
+    echo -e "${PURPLE}当前时间：$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
+    echo -e "${BLUE}系统内核版本：$(uname -r)${RESET}"
+    echo -e "${GREEN}项目地址：https://github.com/qljsyph/bash-script 版本v1.2.5beta ${RESET}"
+}
 
-check_singbox() {
+check_singbox_service() {
 if command -v sing-box >/dev/null 2>&1; then
     CURRENT_VERSION=$(sing-box version 2>/dev/null | head -n 1 | cut -d ' ' -f 3 || echo "未知版本")
     CURRENT_VERSION_TYPE=$(echo "$CURRENT_VERSION" | grep -oE '(alpha|beta|rc)' || echo "stable")
@@ -89,6 +91,65 @@ check_system_resources() {
     echo -e "${BLUE}磁盘使用：${RESET}${DISK_INFO}"
 }
 
+get_ip_type() {
+    local interface="$1"
+    local connection method network_file lease_file ifindex
+
+    if command -v nmcli >/dev/null 2>&1; then
+        connection=$(nmcli -g GENERAL.CONNECTION device show "$interface" 2>/dev/null | head -n 1)
+        if [[ -n "$connection" && "$connection" != "--" ]]; then
+            method=$(nmcli -g ipv4.method connection show "$connection" 2>/dev/null | head -n 1)
+            [[ "$method" == "auto" ]] && echo "DHCP 分配" && return
+            [[ "$method" == "manual" ]] && echo "静态 IP" && return
+        fi
+    fi
+
+    if grep -qE "iface[[:space:]]+${interface}[[:space:]]+inet[[:space:]]+dhcp" /etc/network/interfaces /etc/network/interfaces.d/* 2>/dev/null; then
+        echo "DHCP 分配"
+        return
+    fi
+
+    for network_file in /etc/systemd/network/*.network; do
+        [[ -e "$network_file" ]] || continue
+        if grep -qE "Name=(${interface}|\\*)" "$network_file" && grep -qiE "^DHCP=(yes|true|ipv4)" "$network_file"; then
+            echo "DHCP 分配"
+            return
+        fi
+    done
+
+    ifindex=$(cat /sys/class/net/"$interface"/ifindex 2>/dev/null)
+    if [[ -n "$ifindex" && -f "/run/systemd/netif/leases/$ifindex" ]]; then
+        echo "DHCP 分配"
+        return
+    fi
+
+    for lease_file in /run/dhclient*"$interface"*.leases /var/lib/dhcp/*"$interface"*.leases; do
+        [[ -e "$lease_file" ]] && echo "DHCP 分配" && return
+    done
+
+    echo "静态 IP"
+}
+
+get_wan_ip() {
+    local wan_ip api
+    local apis=(
+        "https://ifconfig.me"
+        "https://api.ipify.org"
+        "https://ip.sb"
+        "https://icanhazip.com"
+    )
+
+    command -v curl >/dev/null 2>&1 || return
+
+    for api in "${apis[@]}"; do
+        wan_ip=$(curl -4 -s --max-time 3 "$api" 2>/dev/null | tr -d '[:space:]')
+        if [[ "$wan_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "$wan_ip"
+            return
+        fi
+    done
+}
+
 check_network() {
     echo -e "\n${CYAN}网络信息：${RESET}"
     DEFAULT_GATEWAY=$(ip route | awk '/default/ {print $3}')
@@ -100,9 +161,30 @@ check_network() {
         DNS_SERVERS=$(grep '^nameserver' /etc/resolv.conf | awk '{print $2}')
     fi
     [[ -n "$DNS_SERVERS" ]] && echo -e "${BLUE}DNS 服务器：${RESET}\n$DNS_SERVERS" || echo -e "${RED}未找到 DNS 服务器信息！${RESET}"
+    WAN_IP=$(get_wan_ip)
+    echo -e "${BLUE}落地IP：${RESET}${WAN_IP:-N/A}"
+
+    echo -e "${YELLOW}网络接口信息：${RESET}"
+    while IFS= read -r INTERFACE; do
+        [[ "$INTERFACE" =~ ^(lo|docker0|br-|veth|tun|tap|wg|tailscale|zt) ]] && continue
+
+        MAC_ADDRESS=$(cat /sys/class/net/"$INTERFACE"/address 2>/dev/null)
+        IP_ADDRESS=$(ip -o -4 addr show "$INTERFACE" | awk '{print $4}' | cut -d'/' -f1)
+        IP_TYPE=$(get_ip_type "$INTERFACE")
+
+        echo -e "${BLUE}接口：${RESET}${INTERFACE}"
+        echo -e "  ${BLUE}MAC 地址：${RESET}${MAC_ADDRESS:-未知}"
+        echo -e "  ${BLUE}IP 地址：${RESET}${IP_ADDRESS:-未分配}"
+        echo -e "  ${BLUE}IP 类型：${RESET}${IP_TYPE}"
+    done < <(ip -o link show | awk -F': ' '{print $2}' | cut -d'@' -f1)
 }
 
-check_singbox
-check_services
-check_system_resources
-check_network
+main() {
+    print_header
+    check_singbox_service
+    check_services
+    check_system_resources
+    check_network
+}
+
+main
